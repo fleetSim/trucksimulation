@@ -1,0 +1,9 @@
+*~
+.project
+.settings
+*.class
+*/target
+server/file-uploads
+server/.vertx
+.classpath
+target
