@@ -9,7 +9,7 @@ public class TruckTest {
 	@Test
 	public void testMovement() throws InterruptedException {
 		Truck t1 = Truck.buildTruck();
-		Route r = new Route(55.926081, 11.665394, 55.676097, 12.568337); // Nykøbing Sjaelland to Copenhagen
+		Route r = new Route(new Position(55.926081, 11.665394), new Position(55.676097, 12.568337)); // Nykøbing Sjaelland to Copenhagen
 		t1.setRoute(r);
 		
 		long journeyTime = 0;

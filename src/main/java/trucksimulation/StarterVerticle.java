@@ -12,16 +12,22 @@ public class StarterVerticle extends AbstractVerticle {
 	@Override
 	  public void start() {
 	    Router router = Router.router(vertx);
+	    setUpBusBridge(router);
 	    router.route().handler(StaticHandler.create());
-	    
-	    BridgeOptions options = new BridgeOptions().addOutboundPermitted(new PermittedOptions().setAddress("trucks"));
-	    router.route("/eventbus/*").handler(SockJSHandler.create(vertx).bridge(options));
-	    vertx.createHttpServer().requestHandler(router::accept).listen(8080);	    
-	    vertx.setPeriodic(100, t -> vertx.eventBus().publish("trucks", "news from the server!"));
+	    vertx.createHttpServer().requestHandler(router::accept).listen(8080);
 	    
 	    vertx.deployVerticle(new TruckControllerVerticle(), e -> {
-	    	
+	    	if(e.failed()) {
+	    		e.cause().printStackTrace();
+	    	}
 	    });
 	  }
+	
+	private void setUpBusBridge(final Router router) {
+		BridgeOptions opts = new BridgeOptions().addOutboundPermitted(new PermittedOptions().setAddress("trucks"));
+	    SockJSHandler ebHandler = SockJSHandler.create(vertx).bridge(opts);
+	    router.route("/eventbus/*").handler(ebHandler);
+	    
+	}
 
 }

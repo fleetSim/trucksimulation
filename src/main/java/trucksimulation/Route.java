@@ -1,18 +1,14 @@
 package trucksimulation;
 
-import java.util.List;
+import java.io.File;
 import java.util.Locale;
-import java.util.Map;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.PathWrapper;
 import com.graphhopper.routing.util.EncodingManager;
-import com.graphhopper.util.GPXEntry;
 import com.graphhopper.util.Instruction;
-import com.graphhopper.util.InstructionList;
-import com.graphhopper.util.PointList;
 
 public class Route {
 	
@@ -24,11 +20,11 @@ public class Route {
 	private PathWrapper pathWrapper;
 	
 	
-	public Route(double startLat, double startLon, double endLat, double endLon) {
-		this.latFrom = startLat;
-		this.lonFrom = startLon;
-		this.latTo = endLat;
-		this.lonTo = endLon;
+	public Route(Position start, Position goal) {
+		this.latFrom = start.getLat();
+		this.lonFrom = start.getLon();
+		this.latTo = goal.getLat();
+		this.lonTo = goal.getLon();
 		calcRoute();
 	}
 	
@@ -39,8 +35,8 @@ public class Route {
 		//hopper.importOrLoad();
 		
 		String userHome = System.getProperty("user.home");
-		hopper.setOSMFile("/home/rocco/Downloads/denmark-latest.osm.pbf");
-		hopper.setGraphHopperLocation("/home/rocco/.graphhopper");
+		hopper.setOSMFile(new File(userHome, "denmark-latest.osm.pbf").getAbsolutePath());
+		hopper.setGraphHopperLocation(new File(userHome, ".graphhopper").getAbsolutePath());
 		hopper.setEncodingManager(new EncodingManager("car"));
 		hopper.importOrLoad();
 
@@ -53,9 +49,7 @@ public class Route {
 
 		// first check for errors
 		if(rsp.hasErrors()) {
-		   // handle them!
-		   // rsp.getErrors()
-		   return;
+		   throw new IllegalArgumentException("Could not calculate route from " + latFrom);
 		}
 		pathWrapper = rsp.getBest();		
 	}

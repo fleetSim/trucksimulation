@@ -19,7 +19,7 @@ public class RouteTest {
 
 	@Test
 	public void testDenmark() {
-		Route r = new Route(55.926081, 11.665394, 55.676097, 12.568337); // Nykøbing Sjaelland to Copenhagen
+		Route r = new Route(new Position(55.926081, 11.665394), new Position(55.676097, 12.568337)); // Nykøbing Sjaelland to Copenhagen
 		PathWrapper route = r.getPathWrapper();
 		
 		

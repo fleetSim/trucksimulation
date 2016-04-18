@@ -6,6 +6,9 @@ import java.util.List;
 import com.graphhopper.util.Instruction;
 import com.graphhopper.util.PointList;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+
 public class Truck {
 	
 	private long id;
@@ -39,9 +42,22 @@ public class Truck {
 		try {
 			pos = pos.moveTowards(targetPos, speed * interval);
 		} catch (TargetExceededException e) {
+			//FIXME: jumping to start of next segment is not a good solution.
+			// when the interval is increased, then this slows down the speed on each boundary and causes very wrong results
+			// instead the distance difference should be used to progress further behind the current target
 			pos = targetPos;
 			proceedToNextPoint();
 		}
+	}
+	
+	public JsonObject asGeoJsonFeature() {
+		JsonObject feature = new JsonObject().put("id", id);
+		JsonObject properties = new JsonObject().put("name", toString()).put("id", id);
+		JsonObject geometry = new JsonObject()
+				.put("type", "Point")
+				.put("coordinates", new JsonArray().add(pos.getLon()).add(pos.getLat()));
+		feature.put("type", "Feature").put("geometry",  geometry).put("properties", properties);
+		return feature;
 	}
 	
 	private void proceedToNextPoint() {
