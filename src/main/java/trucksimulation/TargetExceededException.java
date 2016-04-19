@@ -2,6 +2,8 @@ package trucksimulation;
 
 public class TargetExceededException extends Exception {
 
+	private static final long serialVersionUID = 1L;
+
 	public TargetExceededException() {
 	}
 

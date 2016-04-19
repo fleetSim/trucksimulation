@@ -17,7 +17,7 @@ public class TruckTest {
 		while(true) {
 			try {
 				t1.move();
-				System.out.println("new pos: " + t1.getPos());
+				System.out.println("new pos: " + t1.asGeoJsonFeature().toString());
 				Thread.sleep(1);
 				journeyTime++;
 			} catch (IllegalStateException ex) {

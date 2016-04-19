@@ -1,0 +1,4 @@
+- Retrieve country file from http://download.geonames.org/export/dump/
+- select fields that should be imported with awk, eg. `cat DK.txt|awk 'BEGIN { FS = "\t" } ; {print ""$2"\t"$3"\t"$5"\t"$6"\t"$9"\t"$18"\t"$19""}' > dk.light.tsv`
+- save header field names in txt file that were selected, separated by newline
+- import tsv file with mongoimport, e.g. `mongoimport -d test --drop -c cities --file=dk.light.tsv --type=tsv --fieldFile=light.headers.txt`

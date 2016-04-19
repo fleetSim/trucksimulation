@@ -16,7 +16,7 @@ public class Truck {
 	private Route route;
 	private TelemetryData data;
 	
-	private double speed;
+	private double speed = 5.0;
 	private Position pos;
 	private Position targetPos;
 	private int interval = 1;
@@ -26,7 +26,7 @@ public class Truck {
 	private int curSegmentPoint = 0;
 	
 	private static List<Truck> trucks = new ArrayList<>();
-	private static long nextTruckId = 1000;
+	private static long nextTruckId = 100;
 	
 	public Truck(long id) {
 		this.id = id;
@@ -38,12 +38,18 @@ public class Truck {
 		return t;
 	}
 	
-	public void move() {	
+	public void move() {
+		if(speed == 0) {
+			System.out.println("Speed is 0. but why?");
+		}
+		if(pos.equals(targetPos)) {
+			throw new IllegalStateException("Already arrived at target.");
+		}
 		try {
 			pos = pos.moveTowards(targetPos, speed * interval);
 		} catch (TargetExceededException e) {
 			//FIXME: jumping to start of next segment is not a good solution.
-			// when the interval is increased, then this slows down the speed on each boundary and causes very wrong results
+			// when the interval is increased, then this slows down the speed on each boundary and causes wrong results
 			// instead the distance difference should be used to progress further behind the current target
 			pos = targetPos;
 			proceedToNextPoint();
@@ -60,9 +66,8 @@ public class Truck {
 		return feature;
 	}
 	
-	private void proceedToNextPoint() {
-		System.out.println("reached next routing point.");
-		
+	private void proceedToNextPoint() {	
+		System.out.println("proceeding to next point");
 		Instruction currentSegment = route.getSegment(curRouteSegment);
 		PointList points = currentSegment.getPoints();
 		if(points.getSize() > curSegmentPoint + 1) {
@@ -71,16 +76,22 @@ public class Truck {
 		} else {
 			curRouteSegment++;
 			curSegmentPoint = 0;
-			if(route.getSegmentCount() > curRouteSegment+1) {
+			if(curRouteSegment == route.getSegmentCount() -1) {
 				currentSegment = route.getSegment(curRouteSegment);
 				points = currentSegment.getPoints();
 				targetPos = new Position(points.getLat(curSegmentPoint), points.getLon(curSegmentPoint));
-				speed = currentSegment.getDistance() / currentSegment.getTime() * 1000;	
+			} else if(curRouteSegment < route.getSegmentCount()) {
+				currentSegment = route.getSegment(curRouteSegment);
+				points = currentSegment.getPoints();
+				targetPos = new Position(points.getLat(curSegmentPoint), points.getLon(curSegmentPoint));
+				double nextSpeed = currentSegment.getDistance() / currentSegment.getTime() * 1000;
+				if(nextSpeed > 0) {
+					speed = nextSpeed;
+				}
+				
 			} else {
 				throw new IllegalStateException("Truck has reached its target. Please assign a new route before proceeding.");
 			}
-			
-			System.out.println("Starting next routing segment, speed now at " + speed + " m/s");
 		}
 		
 	}
