@@ -30,7 +30,7 @@ public class TruckTest {
 			}
 		}
 		System.out.println("Journey took " + journeyTime + " seconds.");
-		System.out.println("estimated journey time was " + t1.getRoute().getPathWrapper().getTime()/1000);
+		System.out.println("estimated journey time was " + t1.getRoute().getTime()/1000);
 	}
 
 }

@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
+import trucksimulation.routing.RouteSegment;
 import trucksimulation.routing.TargetExceededException;
 
 public class Truck {
@@ -24,7 +25,6 @@ public class Truck {
 	private Position targetPos;
 	private int interval = 1;
 	
-	// always point to the next target point
 	private int curRouteSegment = 0;
 	private int curSegmentPoint = 0;
 	
@@ -42,9 +42,6 @@ public class Truck {
 	}
 	
 	public void move() {
-		if(speed == 0) {
-			System.out.println("Speed is 0. but why?");
-		}
 		if(pos.equals(targetPos)) {
 			throw new IllegalStateException("Already arrived at target.");
 		}
@@ -70,33 +67,27 @@ public class Truck {
 	}
 	
 	private void proceedToNextPoint() {	
-		System.out.println("proceeding to next point");
-		Instruction currentSegment = route.getSegment(curRouteSegment);
-		PointList points = currentSegment.getPoints();
-		if(points.getSize() > curSegmentPoint + 1) {
+		RouteSegment currentSegment = route.getSegment(curRouteSegment);
+		if(currentSegment.getSize() > curSegmentPoint + 1) {
 			curSegmentPoint++;
-			targetPos = new Position(points.getLat(curSegmentPoint), points.getLon(curSegmentPoint));
+			targetPos = currentSegment.getPoint(curSegmentPoint);
 		} else {
 			curRouteSegment++;
 			curSegmentPoint = 0;
 			if(curRouteSegment == route.getSegmentCount() -1) {
 				currentSegment = route.getSegment(curRouteSegment);
-				points = currentSegment.getPoints();
-				targetPos = new Position(points.getLat(curSegmentPoint), points.getLon(curSegmentPoint));
+				targetPos = currentSegment.getPoint(curSegmentPoint);
 			} else if(curRouteSegment < route.getSegmentCount()) {
 				currentSegment = route.getSegment(curRouteSegment);
-				points = currentSegment.getPoints();
-				targetPos = new Position(points.getLat(curSegmentPoint), points.getLon(curSegmentPoint));
-				double nextSpeed = currentSegment.getDistance() / currentSegment.getTime() * 1000;
+				targetPos = currentSegment.getPoint(curSegmentPoint);
+				double nextSpeed = currentSegment.getSpeed();
 				if(nextSpeed > 0) {
 					speed = nextSpeed;
 				}
-				
 			} else {
 				throw new IllegalStateException("Truck has reached its target. Please assign a new route before proceeding.");
 			}
 		}
-		
 	}
 	
 	public long getId() {
@@ -116,7 +107,7 @@ public class Truck {
 	}
 	public void setRoute(Route route) {
 		this.route = route;
-		this.pos = route.getStartPosition();
+		this.pos = route.getStart();
 		this.proceedToNextPoint();
 	}
 	public TelemetryData getData() {

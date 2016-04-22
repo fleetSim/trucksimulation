@@ -10,26 +10,29 @@ import com.graphhopper.PathWrapper;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.util.Instruction;
 
+
 public class Route {
 	
-	private double latFrom;
-	private double lonFrom;
-	
-	private double latTo;
-	private double lonTo;
-	private PathWrapper pathWrapper;
+	private Position start;	
+	private Position goal;
+	private RouteSegment[] segments;
+	private double time;
+	private double distance;
+	private transient PathWrapper pathWrapper;
 	
 	
 	public Route(Position start, Position goal) {
-		this.latFrom = start.getLat();
-		this.lonFrom = start.getLon();
-		this.latTo = goal.getLat();
-		this.lonTo = goal.getLon();
-		calcRoute();
+		this.start = start;
+		this.goal = goal;
+		init();
 	}
 	
+	private void init() {
+		calcRoute();
+		loadRouteFromWrapper();
+	}
 	
-	public void calcRoute() {
+	private void calcRoute() {
 		// create one GraphHopper instance
 		GraphHopper hopper = new GraphHopper().forServer();
 		//hopper.importOrLoad();
@@ -41,7 +44,7 @@ public class Route {
 		hopper.importOrLoad();
 
 		// simple configuration of the request object, see the GraphHopperServlet classs for more possibilities.
-		GHRequest req = new GHRequest(latFrom, lonFrom, latTo, lonTo).
+		GHRequest req = new GHRequest(start.getLat(), start.getLon(), goal.getLat(), goal.getLon()).
 		    setWeighting("fastest").
 		    setVehicle("car").
 		    setLocale(Locale.US);
@@ -49,59 +52,90 @@ public class Route {
 
 		// first check for errors
 		if(rsp.hasErrors()) {
-		   throw new IllegalArgumentException("Could not calculate route from " + latFrom);
+		   throw new IllegalArgumentException("Could not calculate route. Check coordinates.", rsp.getErrors().get(0));
 		}
-		pathWrapper = rsp.getBest();		
+		pathWrapper = rsp.getBest();
+	}
+	
+	private void loadRouteFromWrapper() {
+		this.time = pathWrapper.getTime();
+		this.distance = pathWrapper.getDistance();
+		
+		segments = new RouteSegment[pathWrapper.getInstructions().size()];
+		for(int s = 0; s < pathWrapper.getInstructions().size(); s++) {
+			Instruction inst = pathWrapper.getInstructions().get(s);
+			double dist = inst.getDistance();
+			double time = inst.getTime();
+			double lats[] = new double[inst.getPoints().size()];
+			double lons[] = new double[inst.getPoints().size()];
+			for(int i = 0; i < inst.getPoints().size(); i++) {
+				lats[i] = inst.getPoints().getLat(i);
+				lons[i] = inst.getPoints().getLon(i);
+			}
+			RouteSegment segment = new RouteSegment(lats, lons, time, dist);
+			segments[s] = segment;
+		}
+		// wrapper can be garbage collected, it is no longer needed
+		pathWrapper = null;
 	}
 	
 	
-	public Position getStartPosition() {
-		return new Position(pathWrapper.getPoints().getLat(0), pathWrapper.getPoints().getLon(0));
-	}
-	
-	public Instruction getSegment(int index) {
-		return pathWrapper.getInstructions().get(index);
+	public RouteSegment getSegment(int index) {
+		return segments[index];
 	}
 	
 	public int getSegmentCount() {
-		return pathWrapper.getInstructions().getSize();
+		return segments.length;
 	}
 
-
-	public double getLatFrom() {
-		return latFrom;
-	}
-
-	public void setLatFrom(double latFrom) {
-		this.latFrom = latFrom;
-	}
-
-	public double getLonFrom() {
-		return lonFrom;
-	}
-
-	public void setLonFrom(double lonFrom) {
-		this.lonFrom = lonFrom;
-	}
-
-	public double getLatTo() {
-		return latTo;
-	}
-
-	public void setLatTo(double latTo) {
-		this.latTo = latTo;
-	}
-
-	public double getLonTo() {
-		return lonTo;
-	}
-
-	public void setLonTo(double lonTo) {
-		this.lonTo = lonTo;
-	}
 
 	public PathWrapper getPathWrapper() {
 		return pathWrapper;
+	}
+
+
+	public Position getStart() {
+		return start;
+	}
+
+
+	public void setStart(Position start) {
+		this.start = start;
+	}
+
+
+	public Position getGoal() {
+		return goal;
+	}
+
+
+	public void setGoal(Position goal) {
+		this.goal = goal;
+	}
+	
+	public double getTime() {
+		return time;
+	}
+
+	public void setTime(double time) {
+		this.time = time;
+	}
+
+	public double getDistance() {
+		return distance;
+	}
+
+	public void setDistance(double distance) {
+		this.distance = distance;
+	}
+
+	public RouteSegment[] getSegments() {
+		return segments;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s -> %s", start, goal);
 	}
 
 }

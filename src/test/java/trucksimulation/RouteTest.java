@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.google.gson.Gson;
 import com.graphhopper.PathWrapper;
 import com.graphhopper.util.GPXEntry;
 import com.graphhopper.util.Instruction;
@@ -24,6 +25,9 @@ public class RouteTest {
 	public void testDenmark() {
 		Route r = new Route(new Position(55.926081, 11.665394), new Position(55.676097, 12.568337)); // Nykøbing Sjaelland to Copenhagen
 		PathWrapper route = r.getPathWrapper();
+		
+		Gson g = new Gson();
+		System.out.println(g.toJson(r));
 		
 		
 		// points, distance in meters and time in millis of the full path
