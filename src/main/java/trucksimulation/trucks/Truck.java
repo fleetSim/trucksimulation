@@ -18,12 +18,14 @@ public class Truck {
 	private long id;
 	private Freight freight;
 	private Route route;
+	private TelemetryBox telemetryBox = new TelemetryBox();
 	private TelemetryData data;
 	
 	private double speed = 5.0;
 	private Position pos;
 	private Position targetPos;
 	private int interval = 1;
+	private long ts = 0;
 	
 	private int curRouteSegment = 0;
 	private int curSegmentPoint = 0;
@@ -54,16 +56,12 @@ public class Truck {
 			pos = targetPos;
 			proceedToNextPoint();
 		}
+		ts += interval * 1000;
+		data = telemetryBox.update(pos, ts);
 	}
 	
 	public JsonObject asGeoJsonFeature() {
-		JsonObject feature = new JsonObject().put("id", id);
-		JsonObject properties = new JsonObject().put("name", toString()).put("id", id);
-		JsonObject geometry = new JsonObject()
-				.put("type", "Point")
-				.put("coordinates", new JsonArray().add(pos.getLon()).add(pos.getLat()));
-		feature.put("type", "Feature").put("geometry",  geometry).put("properties", properties);
-		return feature;
+		return pos.asGeoJsonFeature();
 	}
 	
 	private void proceedToNextPoint() {	
@@ -153,6 +151,16 @@ public class Truck {
 
 	public static void setNextTruckId(long nextTruckId) {
 		Truck.nextTruckId = nextTruckId;
+	}
+
+	public JsonObject getJsonData() {
+		JsonObject msg = new JsonObject();
+		msg.put("position", data.getPosition().asGeoJsonFeature());
+		msg.put("speed", data.getSpeed());
+		msg.put("ts", data.getTimeStamp());
+		msg.put("horizontalAccuracy", data.getHorizontalAccuracy());
+		msg.put("truckId", id);
+		return msg;
 	}
 
 }

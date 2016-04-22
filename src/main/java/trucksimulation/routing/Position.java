@@ -1,5 +1,8 @@
 package trucksimulation.routing;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+
 public class Position {
 	
 	private static final int EARTH_RADIUS = 6378137;
@@ -76,6 +79,15 @@ public class Position {
 	}
 
 
+	public JsonObject asGeoJsonFeature() {
+		JsonObject feature = new JsonObject();
+		JsonObject properties = new JsonObject().put("name", name);
+		JsonObject geometry = new JsonObject()
+				.put("type", "Point")
+				.put("coordinates", new JsonArray().add(lon).add(lat));
+		feature.put("type", "Feature").put("geometry",  geometry).put("properties", properties);
+		return feature;
+	}
 
 	@Override
 	public String toString() {

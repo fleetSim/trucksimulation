@@ -12,7 +12,7 @@ import trucksimulation.trucks.Truck;
 
 public class TruckControllerVerticle extends AbstractVerticle {
 	
-	private static final int INTERVAL_MS = 500;
+	private static final int INTERVAL_MS = 1000;
 	private static final int MIN_DISTANCE = 50000;
 	private MongoClient mongo;
 	
@@ -72,8 +72,9 @@ public class TruckControllerVerticle extends AbstractVerticle {
 			vertx.setPeriodic(INTERVAL_MS, timerId -> {
 				try {
 					t.move();
-					vertx.eventBus().publish("trucks", t.asGeoJsonFeature());
+					vertx.eventBus().publish("trucks", t.getJsonData());
 				} catch(Exception ex) {
+					ex.printStackTrace();
 					vertx.cancelTimer(timerId);
 				}							
 			});
