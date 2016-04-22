@@ -4,9 +4,9 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import trucksimulation.models.Truck;
 import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
+import trucksimulation.trucks.Truck;
 
 public class TruckTest {
 

@@ -1,4 +1,4 @@
-package trucksimulation.models;
+package trucksimulation.trucks;
 
 import java.util.ArrayList;
 import java.util.List;

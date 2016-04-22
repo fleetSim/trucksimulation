@@ -1,4 +1,4 @@
-package trucksimulation.models;
+package trucksimulation.trucks;
 
 public class TelemetryData {
 	

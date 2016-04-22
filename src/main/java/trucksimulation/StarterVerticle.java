@@ -11,23 +11,16 @@ public class StarterVerticle extends AbstractVerticle {
 	
 	@Override
 	  public void start() {
-	    Router router = Router.router(vertx);
-	    setUpBusBridge(router);
-	    router.route().handler(StaticHandler.create());
-	    vertx.createHttpServer().requestHandler(router::accept).listen(8080);
-	    
 	    vertx.deployVerticle(new TruckControllerVerticle(), e -> {
 	    	if(e.failed()) {
 	    		e.cause().printStackTrace();
 	    	}
 	    });
-	  }
-	
-	private void setUpBusBridge(final Router router) {
-		BridgeOptions opts = new BridgeOptions().addOutboundPermitted(new PermittedOptions().setAddress("trucks"));
-	    SockJSHandler ebHandler = SockJSHandler.create(vertx).bridge(opts);
-	    router.route("/eventbus/*").handler(ebHandler);
 	    
-	}
-
+	    vertx.deployVerticle(new Server(), e -> {
+	    	if(e.failed()) {
+	    		e.cause().printStackTrace();
+	    	}
+	    });
+	  }
 }
