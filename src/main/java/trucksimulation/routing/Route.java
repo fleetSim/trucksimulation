@@ -1,4 +1,4 @@
-package trucksimulation;
+package trucksimulation.routing;
 
 import java.io.File;
 import java.util.Locale;

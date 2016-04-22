@@ -1,4 +1,4 @@
-package trucksimulation;
+package trucksimulation.routing;
 
 public class Position {
 	

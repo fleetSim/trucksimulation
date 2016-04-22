@@ -1,4 +1,4 @@
-package trucksimulation;
+package trucksimulation.models;
 
 public class FreightItem {
 	

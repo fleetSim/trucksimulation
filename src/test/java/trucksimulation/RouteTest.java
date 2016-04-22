@@ -15,6 +15,9 @@ import com.graphhopper.util.InstructionList;
 import com.graphhopper.util.PointList;
 import com.graphhopper.util.shapes.GHPoint3D;
 
+import trucksimulation.routing.Position;
+import trucksimulation.routing.Route;
+
 public class RouteTest {
 
 	@Test

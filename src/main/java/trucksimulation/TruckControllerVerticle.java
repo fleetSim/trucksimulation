@@ -6,6 +6,9 @@ import java.util.Random;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
+import trucksimulation.models.Truck;
+import trucksimulation.routing.Position;
+import trucksimulation.routing.Route;
 
 public class TruckControllerVerticle extends AbstractVerticle {
 	

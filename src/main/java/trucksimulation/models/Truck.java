@@ -1,4 +1,4 @@
-package trucksimulation;
+package trucksimulation.models;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +8,9 @@ import com.graphhopper.util.PointList;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import trucksimulation.routing.Position;
+import trucksimulation.routing.Route;
+import trucksimulation.routing.TargetExceededException;
 
 public class Truck {
 	
