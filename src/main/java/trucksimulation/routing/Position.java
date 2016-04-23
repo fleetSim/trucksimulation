@@ -55,6 +55,31 @@ public class Position {
 		    return dist;
 	}
 	
+	/**
+	 * Returns the bearing from the current position to the next position in degrees.
+	 * Uses formula from http://www.movable-type.co.uk/scripts/latlong.html<br>
+	 * <pre>θ = atan2( sin Δλ ⋅ cos φ2 , cos φ1 ⋅ sin φ2 − sin φ1 ⋅ cos φ2 ⋅ cos Δλ )</pre>
+	 * where 	φ1,λ1 is the start point, φ2,λ2 the end point (Δλ is the difference in longitude)
+	 * 
+	 * @param nextPosition
+	 * @return bearing in degrees
+	 */
+	public double getBearing(Position nextPosition) {
+		double lat1, lat2, lon1, lon2;
+	    lat1 = Math.toRadians(lat); // φ1
+	    lon1 = Math.toRadians(lon); // λ1
+	    lat2 = Math.toRadians(nextPosition.getLat()); // φ2
+	    lon2 = Math.toRadians(nextPosition.getLon()); // λ2
+	    
+	    double y = Math.sin(lon2-lon1) * Math.cos(lat2);
+	    double x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2-lon1);
+	    double brng = Math.toDegrees(Math.atan2(y, x));
+	    if (brng < 0) {
+	      brng = 360 + brng;
+	    }
+	    return brng;
+	}
+	
 	public double getLat() {
 		return lat;
 	}
