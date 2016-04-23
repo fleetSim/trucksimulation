@@ -22,6 +22,9 @@ public class TelemetryBox {
 		curData.setTimeStamp(timestamp);
 		curData.setPosition(pos);
 		curData.setSpeed(getSpeed());
+		if(prevData != null) {
+			curData.setBearing(prevData.getPosition().getBearing(pos));
+		}
 		return curData;
 	}
 	

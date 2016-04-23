@@ -160,6 +160,7 @@ public class Truck {
 		msg.put("ts", data.getTimeStamp());
 		msg.put("horizontalAccuracy", data.getHorizontalAccuracy());
 		msg.put("truckId", id);
+		msg.put("bearing", data.getBearing());
 		return msg;
 	}
 

@@ -12,6 +12,7 @@ public class TelemetryData {
 	private int verticalAccuracy = 20;
 	private int horizontalAccuracy = 5;
 	private double speed;
+	private double bearing;
 	private Random random = new Random();
 	
 	
@@ -63,6 +64,12 @@ public class TelemetryData {
 	}
 	public void setHorizontalAccuracy(int horizontalAccuracy) {
 		this.horizontalAccuracy = horizontalAccuracy;
+	}
+	public double getBearing() {
+		return bearing;
+	}
+	public void setBearing(double bearing) {
+		this.bearing = bearing;
 	}
 
 }
