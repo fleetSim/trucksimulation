@@ -9,6 +9,8 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
 import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
@@ -16,14 +18,18 @@ import trucksimulation.trucks.Truck;
 
 public class TruckControllerVerticle extends AbstractVerticle {
 	
-	private static final int INTERVAL_MS = 1000;
 	private static final int MIN_DISTANCE = 50000;
+	private static final Logger LOGGER = LoggerFactory.getLogger(TruckControllerVerticle.class);
 	private MongoClient mongo;
+	private int intervalMS;
 	
 	@Override
 	public void start() throws Exception {
-		mongo = MongoClient.createShared(vertx, new JsonObject().put("db_name", "test"));
-		startSimulation(10);
+		mongo = MongoClient.createShared(vertx, config().getJsonObject("mongodb", new JsonObject()));
+		
+		intervalMS = config().getJsonObject("simulation", new JsonObject()).getInteger("interval_ms", 1000);
+		
+		startSimulation(1000);
 	}	
 	
 	/**
@@ -62,7 +68,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 						Truck t = Truck.buildTruck();
 						t.setRoute(r);
 						startMoving(t);
-						System.out.println("Starting truck " + t.getId());
+						LOGGER.info("Starting truck " + t.getId());
 					}
 				});
 				num--;
@@ -71,7 +77,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 	}
 	
 	private void startMoving(Truck t) {
-			vertx.setPeriodic(INTERVAL_MS, timerId -> {
+			vertx.setPeriodic(intervalMS, timerId -> {
 				try {
 					t.move();
 					vertx.eventBus().publish("trucks", t.getJsonData());

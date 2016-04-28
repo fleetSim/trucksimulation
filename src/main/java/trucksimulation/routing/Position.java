@@ -25,7 +25,7 @@ public class Position {
 	public Position moveTowards(Position target, double speed) throws TargetExceededException {
 		double distance = getDistance(target);
 		if(speed > distance) {
-			throw new TargetExceededException("Moving into targets direction in this speed would exceed the target point.");
+			throw new TargetExceededException("Moving into targets direction in this speed would exceed the target point.", speed - distance);
 		}
 		return moveTowards(target, speed, distance);
 	}

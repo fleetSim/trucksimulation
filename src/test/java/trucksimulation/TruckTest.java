@@ -1,7 +1,5 @@
 package trucksimulation;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
 import trucksimulation.routing.Position;

@@ -43,21 +43,23 @@ public class Truck {
 		return t;
 	}
 	
-	public void move() {
+	public void move(double moveSpeed) {
 		if(pos.equals(targetPos)) {
 			throw new IllegalStateException("Already arrived at target.");
 		}
 		try {
-			pos = pos.moveTowards(targetPos, speed * interval);
+			pos = pos.moveTowards(targetPos, moveSpeed * interval);
 		} catch (TargetExceededException e) {
-			//FIXME: jumping to start of next segment is not a good solution.
-			// when the interval is increased, then this slows down the speed on each boundary and causes wrong results
-			// instead the distance difference should be used to progress further behind the current target
 			pos = targetPos;
 			proceedToNextPoint();
+			move(e.getExceededBy());
 		}
 		ts += interval * 1000;
 		data = telemetryBox.update(pos, ts);
+	}
+	
+	public void move() {
+		move(speed);		
 	}
 	
 	public JsonObject asGeoJsonFeature() {

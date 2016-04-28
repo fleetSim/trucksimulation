@@ -19,12 +19,18 @@ public class Route {
 	private double time;
 	private double distance;
 	private transient PathWrapper pathWrapper;
+	private transient String osmPath;
 	
 	
-	public Route(Position start, Position goal) {
+	public Route(Position start, Position goal, String osmPath) {
 		this.start = start;
 		this.goal = goal;
+		this.osmPath = osmPath;
 		init();
+	}
+	
+	public Route(Position start, Position goal) {
+		this(start, goal, new File("osm", "denmark-latest.osm.pbf").getAbsolutePath());
 	}
 	
 	private void init() {
@@ -35,10 +41,9 @@ public class Route {
 	private void calcRoute() {
 		// create one GraphHopper instance
 		GraphHopper hopper = new GraphHopper().forServer();
-		//hopper.importOrLoad();
 		
 		String userHome = System.getProperty("user.home");
-		hopper.setOSMFile(new File("osm-maps", "denmark-latest.osm.pbf").getAbsolutePath());
+		hopper.setOSMFile(osmPath);
 		hopper.setGraphHopperLocation(new File(userHome, ".graphhopper").getAbsolutePath());
 		hopper.setEncodingManager(new EncodingManager("car"));
 		hopper.importOrLoad();
