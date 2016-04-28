@@ -4,4 +4,4 @@ lat
 lon
 code
 tz
-mofified
+modified

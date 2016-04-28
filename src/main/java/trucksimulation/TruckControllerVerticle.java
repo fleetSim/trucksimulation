@@ -23,7 +23,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 	@Override
 	public void start() throws Exception {
 		mongo = MongoClient.createShared(vertx, new JsonObject().put("db_name", "test"));
-		startSimulation(1000);
+		startSimulation(10);
 	}	
 	
 	/**

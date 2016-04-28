@@ -38,7 +38,7 @@ public class Route {
 		//hopper.importOrLoad();
 		
 		String userHome = System.getProperty("user.home");
-		hopper.setOSMFile(new File(userHome, "denmark-latest.osm.pbf").getAbsolutePath());
+		hopper.setOSMFile(new File("osm-maps", "denmark-latest.osm.pbf").getAbsolutePath());
 		hopper.setGraphHopperLocation(new File(userHome, ".graphhopper").getAbsolutePath());
 		hopper.setEncodingManager(new EncodingManager("car"));
 		hopper.importOrLoad();
