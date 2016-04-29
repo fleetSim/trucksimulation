@@ -10,10 +10,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class RouteManager extends AbstractVerticle {
+public class RouteCalculationVerticle extends AbstractVerticle {
 	
 	private String osmFile;
-	private static final Logger LOGGER = LoggerFactory.getLogger(RouteManager.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RouteCalculationVerticle.class);
 	
 	@Override
 	public void start() throws Exception {
