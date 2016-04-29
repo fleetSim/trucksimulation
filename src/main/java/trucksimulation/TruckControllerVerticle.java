@@ -14,6 +14,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
 import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
+import trucksimulation.trucks.DestinationArrivedException;
 import trucksimulation.trucks.Truck;
 
 public class TruckControllerVerticle extends AbstractVerticle {
@@ -81,10 +82,13 @@ public class TruckControllerVerticle extends AbstractVerticle {
 				try {
 					t.move();
 					vertx.eventBus().publish("trucks", t.getJsonData());
-				} catch(Exception ex) {
-					ex.printStackTrace();
+				} catch(DestinationArrivedException ex) {
+					LOGGER.info("Truck has arrived at destination: #" + t.getId());
 					vertx.cancelTimer(timerId);
-				}							
+				} catch (Exception ex) {
+					LOGGER.error("Unexpected error, stopping truck #" + t.getId(), ex);
+					vertx.cancelTimer(timerId);
+				}
 			});
 			
 

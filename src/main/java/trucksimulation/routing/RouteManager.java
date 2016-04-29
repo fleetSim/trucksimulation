@@ -3,16 +3,17 @@ package trucksimulation.routing;
 import java.io.File;
 
 import com.google.gson.Gson;
-import com.graphhopper.GraphHopper;
-import com.graphhopper.routing.util.EncodingManager;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class RouteManager extends AbstractVerticle {
 	
 	private String osmFile;
+	private static final Logger LOGGER = LoggerFactory.getLogger(RouteManager.class);
 	
 	@Override
 	public void start() throws Exception {
@@ -32,7 +33,7 @@ public class RouteManager extends AbstractVerticle {
 			Route route = new Route(fromPos, toPos, osmFile);
 			msg.reply(gson.toJson(route));
 		} catch(Exception ex) {
-			ex.printStackTrace();
+			LOGGER.error("Route could not be calculated", ex);
 			msg.fail(500, ex.getMessage());
 		}
 		

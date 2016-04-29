@@ -2,9 +2,13 @@ package trucksimulation;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import trucksimulation.routing.RouteManager;
 
 public class StarterVerticle extends AbstractVerticle {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(StarterVerticle.class);
 	
 	
 	@Override
@@ -15,18 +19,18 @@ public class StarterVerticle extends AbstractVerticle {
 		
 	    vertx.deployVerticle(new RouteManager(), routeMgrOptions, w -> {
 	    	if(w.failed()) {
-	    		w.cause().printStackTrace();
+	    		LOGGER.error("Deployment of RouteManager failed." + w.cause());
 	    	}
 		    vertx.deployVerticle(new TruckControllerVerticle(), deplOptions, e -> {
 		    	if(e.failed()) {
-		    		e.cause().printStackTrace();
+		    		LOGGER.error("Deployment of TruckCOntroller failed." + e.cause());
 		    	}
 		    });
 	    });
 	    
 	    vertx.deployVerticle(new Server(), deplOptions,  e -> {
 	    	if(e.failed()) {
-	    		e.cause().printStackTrace();
+	    		LOGGER.error("Deployment of server failed. " + e.cause());
 	    	}
 	    });
 	  }

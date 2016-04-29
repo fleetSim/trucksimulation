@@ -45,7 +45,7 @@ public class Truck {
 	
 	public void move(double moveSpeed) {
 		if(pos.equals(targetPos)) {
-			throw new IllegalStateException("Already arrived at target.");
+			throw new DestinationArrivedException("Already arrived at destination. Set a new destination / route.");
 		}
 		try {
 			pos = pos.moveTowards(targetPos, moveSpeed * interval);
