@@ -22,17 +22,25 @@ public class Position {
 	
 	
 
-	public Position moveTowards(Position target, double speed) throws TargetExceededException {
-		double distance = getDistance(target);
-		if(speed > distance) {
-			throw new TargetExceededException("Moving into targets direction in this speed would exceed the target point.", speed - distance);
+	/**
+	 * Moves the point towards its target for the specified distance in meters.
+	 *
+	 * @param target the target position
+	 * @param distance the distance in meters
+	 * @return a new position between the last position and the target position
+	 * @throws TargetExceededException when the distance to move is larger than the available distance between the position and the target
+	 */
+	public Position moveTowards(Position target, double distance) throws TargetExceededException {
+		double distance2NextPos = getDistance(target);
+		if(distance > distance2NextPos) {
+			throw new TargetExceededException("Moving into targets direction would exceed the target point.", distance - distance2NextPos);
 		}
-		return moveTowards(target, speed, distance);
+		return moveTowards(target, distance, distance2NextPos);
 	}
 	
-	public Position moveTowards(Position target, double speed, double distance) {
+	public Position moveTowards(Position target, double distance2move, double distance2NextPos) {
 		double latNew, lonNew;
-		double stepsize = distance / speed;
+		double stepsize = distance2NextPos / distance2move;
 		latNew = lat + (target.lat - lat) / stepsize;
 		lonNew = lon + (target.lon - lon) / stepsize;
 		return new Position(latNew, lonNew);
@@ -40,8 +48,8 @@ public class Position {
 	
 	/**
 	 * 
-	 * @param other
-	 * @return distance in meters (approximated)
+	 * @param other the other position to which the distance should be measured
+	 * @return distance in meters (approximated using a 2d sphere)
 	 */
 	public double getDistance(Position other) {
 		    double latA = Math.toRadians(lat);
