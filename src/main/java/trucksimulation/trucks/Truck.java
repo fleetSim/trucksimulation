@@ -85,7 +85,7 @@ public class Truck {
 					speed = nextSpeed;
 				}
 			} else {
-				throw new IllegalStateException("Truck has reached its target. Please assign a new route before proceeding.");
+				throw new DestinationArrivedException("Truck has reached its target. Please assign a new route before proceeding.");
 			}
 		}
 	}

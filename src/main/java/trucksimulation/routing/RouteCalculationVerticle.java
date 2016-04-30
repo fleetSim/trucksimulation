@@ -19,6 +19,7 @@ public class RouteCalculationVerticle extends AbstractVerticle {
 	public void start() throws Exception {
 		JsonObject simConf = config().getJsonObject("simulation", new JsonObject());
 		osmFile = simConf.getString("osmFile", new File("osm", "denmark-latest.osm.pbf").getAbsolutePath());
+		LOGGER.info("Using osm file " + osmFile + " for route calculations.");
 		
 		vertx.eventBus().consumer("routes.calculate", this::calcRoute);
 	}

@@ -1,12 +1,10 @@
 {
 	"simulation": {
-		"maxTrucks": 100,
-		"mapLocation": "osm/denmark.latest.pbf",
-		"autoDownloadMap": false,
+		"osmFile": "osm/germany-latest.osm.pbf",
 		"msgInterval": 1,
 		"receiverUrl": "localhost:1088/trucks"
 	},
 	"mongodb": {
-		"db_name": "test"
+		"db_name": "trucksimulation"
 	}
 }

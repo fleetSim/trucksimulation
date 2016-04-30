@@ -4,7 +4,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import trucksimulation.routing.RouteManager;
+import trucksimulation.routing.RouteCalculationVerticle;
 
 public class StarterVerticle extends AbstractVerticle {
 	
@@ -17,7 +17,7 @@ public class StarterVerticle extends AbstractVerticle {
 	    DeploymentOptions routeMgrOptions = new DeploymentOptions().setWorker(true).setConfig(config());
 	    DeploymentOptions deplOptions = new DeploymentOptions().setConfig(config());
 		
-	    vertx.deployVerticle(new RouteManager(), routeMgrOptions, w -> {
+	    vertx.deployVerticle(new RouteCalculationVerticle(), routeMgrOptions, w -> {
 	    	if(w.failed()) {
 	    		LOGGER.error("Deployment of RouteManager failed." + w.cause());
 	    	}
