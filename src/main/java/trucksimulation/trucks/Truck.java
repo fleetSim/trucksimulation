@@ -15,7 +15,7 @@ import trucksimulation.routing.TargetExceededException;
 
 public class Truck {
 	
-	private long id;
+	private String id;
 	private Freight freight;
 	private Route route;
 	private TelemetryBox telemetryBox = new TelemetryBox();
@@ -33,12 +33,12 @@ public class Truck {
 	private static List<Truck> trucks = new ArrayList<>();
 	private static long nextTruckId = 100;
 	
-	public Truck(long id) {
+	public Truck(String id) {
 		this.id = id;
 	}
 	
 	public static Truck buildTruck() {
-		Truck t = new Truck(nextTruckId++);
+		Truck t = new Truck("truck " + nextTruckId++);
 		trucks.add(t);
 		return t;
 	}
@@ -90,10 +90,10 @@ public class Truck {
 		}
 	}
 	
-	public long getId() {
+	public String getId() {
 		return id;
 	}
-	public void setId(long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 	public Freight getFreight() {
