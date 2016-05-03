@@ -1,6 +1,9 @@
 package trucksimulation;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import com.google.gson.Gson;
@@ -11,6 +14,8 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.SharedData;
 import io.vertx.ext.mongo.MongoClient;
 import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
@@ -23,13 +28,19 @@ public class TruckControllerVerticle extends AbstractVerticle {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TruckControllerVerticle.class);
 	private MongoClient mongo;
 	private int intervalMS;
+	private LocalMap<String, Boolean> simulationStatus;
+	private Map<String, ArrayList<Long>> simTimerMap = new HashMap<String, ArrayList<Long>>();
 	
 	@Override
 	public void start() throws Exception {
 		mongo = MongoClient.createShared(vertx, config().getJsonObject("mongodb", new JsonObject()));
 		intervalMS = config().getJsonObject("simulation", new JsonObject()).getInteger("interval_ms", 1000);
 		
+		SharedData sd = vertx.sharedData();
+		simulationStatus = sd.getLocalMap("simStatusMap");
+		
 		vertx.eventBus().consumer("simulation.start", this::startSimulation);
+		vertx.eventBus().consumer("simulation.stop", this::stopSimulation);
 	}	
 	
 	
@@ -42,12 +53,17 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		Gson gson = new Gson();
 		JsonObject simulationQuery = msg.body();
 		String simId = simulationQuery.getString("_id");
+		if(isSimulationRunning(simId)) {
+			msg.fail(400, "Simulation is already running.");
+			return;
+		}
 		JsonObject trucksQuery = new JsonObject().put("simulation", simId);
 		mongo.find("trucks", trucksQuery, res -> {
 			if(res.failed()) {
 				msg.fail(500, res.cause().getMessage());
 			} else {
 				msg.reply("ok");
+				setRunningStatus(simId, true);
 				for(JsonObject truck : res.result()) {
 					final Truck t = new Truck(truck.getString("_id"));
 					JsonObject routeQuery = new JsonObject().put("_id", truck.getString("route"));
@@ -55,14 +71,38 @@ public class TruckControllerVerticle extends AbstractVerticle {
 						Route route = gson.fromJson(r.result().toString(), Route.class);
 						t.setRoute(route);
 						long timer = startMoving(t);
-						vertx.eventBus().consumer("simulation.stop." + simId, h -> {
-							vertx.cancelTimer(timer);
-							LOGGER.info("Canceled timer of truck " + t.getId());
-						});
+						registerTimer(simId, timer);
 					});
 				}
 			}
 		});		
+	}
+	
+	private void registerTimer(String simulationId, long timerId) {
+		if(simTimerMap.get(simulationId) == null) {
+			simTimerMap.put(simulationId, new ArrayList<Long>());
+		}
+		simTimerMap.get(simulationId).add(timerId);
+	}
+	
+	private void stopSimulation(Message<JsonObject> msg) {
+		String simId = msg.body().getString("_id");
+		setRunningStatus(simId, false);
+		if(simTimerMap.containsKey(simId)) {
+			List<Long> timers = simTimerMap.get(simId);
+			for(long timer : timers) {
+				vertx.cancelTimer(timer);
+			}
+			simTimerMap.remove(simId);
+		}
+	}
+	
+	private void setRunningStatus(String simulationId, boolean status) {
+		simulationStatus.put(simulationId, status);
+	}
+	
+	private boolean isSimulationRunning(String simulationId) {
+		return simulationStatus.get(simulationId) == true;
 	}
 	
 	private void createSimulationData() {

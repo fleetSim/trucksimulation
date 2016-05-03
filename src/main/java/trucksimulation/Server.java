@@ -1,7 +1,7 @@
 package trucksimulation;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.json.Json;
+import io.vertx.core.eventbus.MessageCodec;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
@@ -10,6 +10,7 @@ import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
+import trucksimulation.trucks.Truck;
 
 public class Server extends AbstractVerticle {
 	
@@ -23,6 +24,8 @@ public class Server extends AbstractVerticle {
 	    setUpRoutes(router);
 	    router.route().handler(StaticHandler.create());
 	    vertx.createHttpServer().requestHandler(router::accept).listen(8080);
+	    
+		//vertx.eventBus().registerDefaultCodec(Truck.class, truckCodec );
 	}
 	
 	private void setUpBusBridge(final Router router) {
@@ -77,7 +80,7 @@ public class Server extends AbstractVerticle {
 	private void stopSimulation(RoutingContext ctx) {
 		String simulationId = ctx.request().getParam("simId");
 		JsonObject query = new JsonObject().put("_id", simulationId);
-		vertx.eventBus().publish("simulation.stop." + simulationId, query);
+		vertx.eventBus().publish("simulation.stop", query);
 		JsonResponse.build(ctx).end(new JsonObject().put("status", "stopped").toString());
 	}
 	
