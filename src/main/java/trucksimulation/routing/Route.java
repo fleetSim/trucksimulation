@@ -21,6 +21,9 @@ public class Route {
 	private transient PathWrapper pathWrapper;
 	private transient String osmPath;
 	
+	public Route() {
+		
+	}
 	
 	public Route(Position start, Position goal, String osmPath) {
 		this.start = start;
@@ -136,6 +139,13 @@ public class Route {
 
 	public RouteSegment[] getSegments() {
 		return segments;
+	}
+	
+	public void setSegments(RouteSegment[] segments) {
+		if(segments == null) {
+			throw new IllegalArgumentException("segments must not be null");
+		}
+		this.segments = segments;
 	}
 
 	@Override

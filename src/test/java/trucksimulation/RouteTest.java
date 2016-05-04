@@ -78,5 +78,21 @@ public class RouteTest {
 		assertTrue(testSegment.getLats()[0] == seg.getLats()[0]);
 		assertTrue(testSegment.getLons()[0] == seg.getLons()[0]);
 	}
+	
+	@Test
+	public void testRouteSerialization() {
+		double[] lats1 = {11.0,12.0,13.0};
+		double[] lons1 = {55.0,54.2,55.1};
+		RouteSegment seg1 = new RouteSegment(lats1, lons1, 5000, 10000);
+		double[] lats2 = {10.0,11.0,12.0};
+		double[] lons2 = {9.0, 8.0, 8.0};
+		RouteSegment seg2 = new RouteSegment(lats2, lons2, 200.0, 4000.0);
+		
+		Route r = new Route();
+		RouteSegment[] segments = {seg1, seg2};
+		r.setSegments(segments);
+		
+		System.out.println(Serializer.get().toJson(r));
+	}
 
 }

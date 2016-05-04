@@ -116,7 +116,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		Position munich = new Position(48.135125, 11.581981);
 		
 		String to = gson.toJson(factoryStuttgart);
-		String from = gson.toJson(munich);
+		String from = gson.toJson(berlin);
 		
 		JsonObject msg = new JsonObject().put("from", new JsonObject(from)).put("to", new JsonObject(to));
 		
@@ -124,10 +124,6 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		vertx.eventBus().send("routes.calculate", msg, (AsyncResult<Message<String>> rpl) -> {
 			if(rpl.succeeded()) {
 				JsonObject route = new JsonObject(rpl.result().body());
-				JsonObject geometryCollection = new JsonObject()
-						.put("type", "GeometryCollection")
-						.put("geometries", route.getJsonArray("segments"));
-				route.put("segments", geometryCollection);
 				
 				mongo.insert("routes", route, res -> {
 					if(res.succeeded()) {
