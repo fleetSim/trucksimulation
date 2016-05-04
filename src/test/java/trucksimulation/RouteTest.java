@@ -9,6 +9,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.graphhopper.PathWrapper;
 import com.graphhopper.util.GPXEntry;
 import com.graphhopper.util.Instruction;
@@ -16,8 +17,11 @@ import com.graphhopper.util.InstructionList;
 import com.graphhopper.util.PointList;
 import com.graphhopper.util.shapes.GHPoint3D;
 
+import io.vertx.core.json.JsonObject;
 import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
+import trucksimulation.routing.RouteSegment;
+import trucksimulation.routing.RouteSegmentAdapter;
 
 public class RouteTest {
 
@@ -58,6 +62,21 @@ public class RouteTest {
 
 		// or get the result as gpx entries:
 		List<GPXEntry> list = il.createGPXList();
+	}
+	
+	@Test
+	public void testSegmentSerialization() {
+		Gson gson = Serializer.get();
+		double[] lats = {10.0,11.0,12.0};
+		double[] lons = {9.0, 8.0, 8.0};
+		RouteSegment testSegment = new RouteSegment(lats, lons, 200.0, 4000.0);
+		String json = gson.toJson(testSegment);
+		//should be valid json
+		new JsonObject(json);
+		
+		RouteSegment seg = gson.fromJson(json, RouteSegment.class);
+		assertTrue(testSegment.getLats()[0] == seg.getLats()[0]);
+		assertTrue(testSegment.getLons()[0] == seg.getLons()[0]);
 	}
 
 }

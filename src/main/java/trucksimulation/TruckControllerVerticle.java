@@ -39,6 +39,8 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		SharedData sd = vertx.sharedData();
 		simulationStatus = sd.getLocalMap("simStatusMap");
 		
+		createSimulationData();
+		
 		vertx.eventBus().consumer("simulation.start", this::startSimulation);
 		vertx.eventBus().consumer("simulation.stop", this::stopSimulation);
 	}	
@@ -50,10 +52,9 @@ public class TruckControllerVerticle extends AbstractVerticle {
 	 * @param msg
 	 */
 	private void startSimulation(Message<JsonObject> msg) {
-		Gson gson = new Gson();
+		Gson gson = Serializer.get();
 		JsonObject simulationQuery = msg.body();
 		String simId = simulationQuery.getString("_id");
-		LOGGER.info("starting simulation " + simId);
 		if(isSimulationRunning(simId)) {
 			msg.fail(400, "Simulation is already running.");
 			return;
@@ -123,6 +124,11 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		vertx.eventBus().send("routes.calculate", msg, (AsyncResult<Message<String>> rpl) -> {
 			if(rpl.succeeded()) {
 				JsonObject route = new JsonObject(rpl.result().body());
+				JsonObject geometryCollection = new JsonObject()
+						.put("type", "GeometryCollection")
+						.put("geometries", route.getJsonArray("segments"));
+				route.put("segments", geometryCollection);
+				
 				mongo.insert("routes", route, res -> {
 					if(res.succeeded()) {
 						LOGGER.info("Inserted new route " + res.result());

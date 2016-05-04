@@ -9,6 +9,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import trucksimulation.Serializer;
 
 public class RouteCalculationVerticle extends AbstractVerticle {
 	
@@ -27,7 +28,7 @@ public class RouteCalculationVerticle extends AbstractVerticle {
 	private void calcRoute(Message<JsonObject> msg) {
 		JsonObject from = msg.body().getJsonObject("from");
 		JsonObject to = msg.body().getJsonObject("to");
-		Gson gson = new Gson();
+		Gson gson = Serializer.get();
 		Position fromPos = gson.fromJson(from.toString(), Position.class);
 		Position toPos = gson.fromJson(to.toString(), Position.class);
 		try {

@@ -23,8 +23,6 @@ public class Server extends AbstractVerticle {
 	    setUpRoutes(router);
 	    router.route().handler(StaticHandler.create());
 	    vertx.createHttpServer().requestHandler(router::accept).listen(8080);
-	    
-		//vertx.eventBus().registerDefaultCodec(Truck.class, truckCodec );
 	}
 	
 	private void setUpBusBridge(final Router router) {
