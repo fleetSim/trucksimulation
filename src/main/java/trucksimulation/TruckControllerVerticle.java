@@ -53,6 +53,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		Gson gson = new Gson();
 		JsonObject simulationQuery = msg.body();
 		String simId = simulationQuery.getString("_id");
+		LOGGER.info("starting simulation " + simId);
 		if(isSimulationRunning(simId)) {
 			msg.fail(400, "Simulation is already running.");
 			return;
@@ -102,7 +103,8 @@ public class TruckControllerVerticle extends AbstractVerticle {
 	}
 	
 	private boolean isSimulationRunning(String simulationId) {
-		return simulationStatus.get(simulationId) == true;
+		Boolean isRunning = simulationStatus.get(simulationId);
+		return isRunning != null && isRunning.booleanValue() == true;
 	}
 	
 	private void createSimulationData() {
