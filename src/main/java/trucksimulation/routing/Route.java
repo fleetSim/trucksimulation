@@ -1,6 +1,8 @@
 package trucksimulation.routing;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import com.graphhopper.GHRequest;
@@ -10,16 +12,21 @@ import com.graphhopper.PathWrapper;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.util.Instruction;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 
 public class Route {
 	
 	private Position start;	
 	private Position goal;
-	private RouteSegment[] segments;
+	private List<RouteSegment> segments = new ArrayList<>();
 	private double time;
 	private double distance;
 	private transient PathWrapper pathWrapper;
 	private transient String osmPath;
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(Route.class);
 	
 	public Route() {
 		
@@ -69,19 +76,25 @@ public class Route {
 		this.time = pathWrapper.getTime();
 		this.distance = pathWrapper.getDistance();
 		
-		segments = new RouteSegment[pathWrapper.getInstructions().size()];
 		for(int s = 0; s < pathWrapper.getInstructions().size(); s++) {
 			Instruction inst = pathWrapper.getInstructions().get(s);
-			double dist = inst.getDistance();
-			double time = inst.getTime();
-			double lats[] = new double[inst.getPoints().size()];
-			double lons[] = new double[inst.getPoints().size()];
-			for(int i = 0; i < inst.getPoints().size(); i++) {
-				lats[i] = inst.getPoints().getLat(i);
-				lons[i] = inst.getPoints().getLon(i);
+			if(inst.getPoints().size() > 1) {
+				double dist = inst.getDistance();
+				double time = inst.getTime();
+				double lats[] = new double[inst.getPoints().size()];
+				double lons[] = new double[inst.getPoints().size()];
+				for(int i = 0; i < inst.getPoints().size(); i++) {
+					lats[i] = inst.getPoints().getLat(i);
+					lons[i] = inst.getPoints().getLon(i);
+				}
+				RouteSegment segment = new RouteSegment(lats, lons, time, dist);
+				segments.add(segment);
+			} else {
+				//TODO: append point to previous segment if position is different
+				// from previous point
+				LOGGER.warn("Dropped point from instruction list.");
 			}
-			RouteSegment segment = new RouteSegment(lats, lons, time, dist);
-			segments[s] = segment;
+
 		}
 		// wrapper can be garbage collected, it is no longer needed
 		pathWrapper = null;
@@ -89,11 +102,11 @@ public class Route {
 	
 	
 	public RouteSegment getSegment(int index) {
-		return segments[index];
+		return segments.get(index);
 	}
 	
 	public int getSegmentCount() {
-		return segments.length;
+		return segments.size();
 	}
 
 
@@ -137,11 +150,11 @@ public class Route {
 		this.distance = distance;
 	}
 
-	public RouteSegment[] getSegments() {
+	public List<RouteSegment> getSegments() {
 		return segments;
 	}
 	
-	public void setSegments(RouteSegment[] segments) {
+	public void setSegments(List<RouteSegment> segments) {
 		if(segments == null) {
 			throw new IllegalArgumentException("segments must not be null");
 		}

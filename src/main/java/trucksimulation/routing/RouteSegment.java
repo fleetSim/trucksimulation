@@ -75,8 +75,7 @@ public class RouteSegment {
 	 */
 	public double getSpeed() {
 		return getDistance() / getTime() * 1000;
-	}
-	
+	}	
 	
 
 }
