@@ -28,7 +28,13 @@ public class TruckControllerVerticle extends AbstractVerticle {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TruckControllerVerticle.class);
 	private MongoClient mongo;
 	private int intervalMS;
+	/**
+	 * Maps simulation id's to the running state of the simulation (true when running).
+	 */
 	private LocalMap<String, Boolean> simulationStatus;
+	/**
+	 * Maps simulation id's to a list of periodic timers that are currently running as part of the simulation.
+	 */
 	private Map<String, ArrayList<Long>> simTimerMap = new HashMap<String, ArrayList<Long>>();
 	
 	@Override
@@ -39,7 +45,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		SharedData sd = vertx.sharedData();
 		simulationStatus = sd.getLocalMap("simStatusMap");
 		
-		createSimulationData();
+		//createSimulationData();
 		
 		vertx.eventBus().consumer("simulation.start", this::startSimulation);
 		vertx.eventBus().consumer("simulation.stop", this::stopSimulation);
@@ -116,7 +122,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		Position munich = new Position(48.135125, 11.581981);
 		
 		String to = gson.toJson(factoryStuttgart);
-		String from = gson.toJson(berlin);
+		String from = gson.toJson(munich);
 		
 		JsonObject msg = new JsonObject().put("from", new JsonObject(from)).put("to", new JsonObject(to));
 		
