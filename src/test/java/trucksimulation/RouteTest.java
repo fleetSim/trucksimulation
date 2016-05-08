@@ -2,8 +2,6 @@ package trucksimulation;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +89,7 @@ public class RouteTest {
 		RouteSegment seg2 = new RouteSegment(lats2, lons2, 200.0, 4000.0);
 		
 		Route r = new Route();
-		List<RouteSegment> segments = Arrays.asList(seg1, seg2);
+		RouteSegment[] segments = {seg1, seg2};
 		r.setSegments(segments);
 		
 		System.out.println(Serializer.get().toJson(r));

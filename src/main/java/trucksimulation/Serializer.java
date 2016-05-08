@@ -3,7 +3,6 @@ package trucksimulation;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import io.vertx.ext.web.Route;
 import trucksimulation.routing.RouteSegment;
 import trucksimulation.routing.RouteSegmentAdapter;
 import trucksimulation.routing.RouteSegmentArrayAdapter;

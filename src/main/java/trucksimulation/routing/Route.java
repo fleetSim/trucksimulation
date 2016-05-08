@@ -20,7 +20,7 @@ public class Route {
 	
 	private Position start;	
 	private Position goal;
-	private List<RouteSegment> segments = new ArrayList<>();
+	private RouteSegment[] segments;
 	private double time;
 	private double distance;
 	private transient PathWrapper pathWrapper;
@@ -76,6 +76,7 @@ public class Route {
 		this.time = pathWrapper.getTime();
 		this.distance = pathWrapper.getDistance();
 		
+		List<RouteSegment> tmpSegList = new ArrayList<>(pathWrapper.getInstructions().size());
 		for(int s = 0; s < pathWrapper.getInstructions().size(); s++) {
 			Instruction inst = pathWrapper.getInstructions().get(s);
 			if(inst.getPoints().size() > 1) {
@@ -88,25 +89,25 @@ public class Route {
 					lons[i] = inst.getPoints().getLon(i);
 				}
 				RouteSegment segment = new RouteSegment(lats, lons, time, dist);
-				segments.add(segment);
+				tmpSegList.add(segment);
 			} else {
 				//TODO: append point to previous segment if position is different
 				// from previous point
 				LOGGER.warn("Dropped point from instruction list.");
 			}
-
 		}
+		segments = tmpSegList.toArray(new RouteSegment[0]);
 		// wrapper can be garbage collected, it is no longer needed
 		pathWrapper = null;
 	}
 	
 	
 	public RouteSegment getSegment(int index) {
-		return segments.get(index);
+		return segments[index];
 	}
 	
 	public int getSegmentCount() {
-		return segments.size();
+		return segments.length;
 	}
 
 
@@ -150,11 +151,11 @@ public class Route {
 		this.distance = distance;
 	}
 
-	public List<RouteSegment> getSegments() {
+	public RouteSegment[] getSegments() {
 		return segments;
 	}
 	
-	public void setSegments(List<RouteSegment> segments) {
+	public void setSegments(RouteSegment[] segments) {
 		if(segments == null) {
 			throw new IllegalArgumentException("segments must not be null");
 		}
