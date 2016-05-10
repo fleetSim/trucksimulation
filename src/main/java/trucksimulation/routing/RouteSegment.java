@@ -3,8 +3,8 @@ package trucksimulation.routing;
 public class RouteSegment {
 	private double[] lats;
 	private double[] lons;
-	private double time;
-	private double distance;
+	private double timeMs;
+	private double distanceMeters;
 	
 	public RouteSegment() {
 		
@@ -13,15 +13,15 @@ public class RouteSegment {
 	public RouteSegment(double[] lats, double[] lons, double time, double distance) {
 		this.lats = lats;
 		this.lons = lons;
-		this.time = time;
-		this.distance = distance;
+		this.timeMs = time;
+		this.distanceMeters = distance;
 	}
 
 	public double[] getLats() {
 		return lats;
 	}
 
-	public void setLats(double[] lats) {
+	public void setLats(double... lats) {
 		this.lats = lats;
 	}
 
@@ -29,7 +29,7 @@ public class RouteSegment {
 		return lons;
 	}
 
-	public void setLons(double[] lons) {
+	public void setLons(double... lons) {
 		this.lons = lons;
 	}
 	
@@ -50,11 +50,14 @@ public class RouteSegment {
 	 * @return time in milliseconds
 	 */
 	public double getTime() {
-		return time;
+		return timeMs;
 	}
 
+	/**
+	 * @param time in milliseconds
+	 */
 	public void setTime(double time) {
-		this.time = time;
+		this.timeMs = time;
 	}
 
 	/**
@@ -62,11 +65,14 @@ public class RouteSegment {
 	 * @return distance in meters
 	 */
 	public double getDistance() {
-		return distance;
+		return distanceMeters;
 	}
 
+	/**
+	 * @param distance distance in meters
+	 */
 	public void setDistance(double distance) {
-		this.distance = distance;
+		this.distanceMeters = distance;
 	}
 	
 	/**

@@ -1,6 +1,7 @@
 package trucksimulation.trucks;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.graphhopper.util.Instruction;
@@ -12,14 +13,17 @@ import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
 import trucksimulation.routing.RouteSegment;
 import trucksimulation.routing.TargetExceededException;
+import trucksimulation.traffic.TrafficIncident;
 
 public class Truck {
 	
 	private String id;
-	private Freight freight;
 	private Route route;
 	private TelemetryBox telemetryBox = new TelemetryBox();
 	private TelemetryData data;
+	private List<TrafficIncident> incidents = new ArrayList<>();
+	/** points to the current traffic incident if the truck is affected by one. null otherwise. */
+	private TrafficIncident curIncident = null;
 	
 	private double speed = 5.0;
 	private Position pos;
@@ -56,10 +60,16 @@ public class Truck {
 		}
 		ts += interval * 1000;
 		data = telemetryBox.update(pos, ts);
+		updateTrafficMode();
 	}
 	
+	/**
+	 * Moves the truck forward on its assigned route.
+	 * 
+	 * Throws a DestinationArrivedException if the truck is already at the last point of the route.
+	 */
 	public void move() {
-		move(speed);		
+		move(speed);	
 	}
 	
 	public JsonObject asGeoJsonFeature() {
@@ -81,7 +91,7 @@ public class Truck {
 				currentSegment = route.getSegment(curRouteSegment);
 				targetPos = currentSegment.getPoint(curSegmentPoint);
 				double nextSpeed = currentSegment.getSpeed();
-				if(nextSpeed > 0) {
+				if(nextSpeed > 0 && curIncident == null) {
 					speed = nextSpeed;
 				}
 			} else {
@@ -95,12 +105,6 @@ public class Truck {
 	}
 	public void setId(String id) {
 		this.id = id;
-	}
-	public Freight getFreight() {
-		return freight;
-	}
-	public void setFreight(Freight freight) {
-		this.freight = freight;
 	}
 	public Route getRoute() {
 		return route;
@@ -165,5 +169,69 @@ public class Truck {
 		msg.put("bearing", data.getBearing());
 		return msg;
 	}
+	
+	
+
+	 /**
+	 * Detects if the truck is entering or leaving a traffic incident.
+	 * Uses a simple check for the current distance to the traffic incidents start and end point.
+	 * It is assumed that only traffic incidents have been assigned to the truck that are actually
+	 * on the trucks route. 
+	  */
+	private void updateTrafficMode() {
+		Iterator<TrafficIncident> iter = incidents.iterator();
+		while(iter.hasNext()) {
+			TrafficIncident incident = iter.next();
+			double distToStart = pos.getDistance(incident.getStart());
+			double distToend = pos.getDistance(incident.getEnd());
+			
+			if(distToStart < speed * interval) {
+				enterTraffic(incident);
+			}
+			if(distToend < speed * interval) {
+				leaveTraffic(incident);
+				iter.remove();
+			}
+		}
+	}
+	
+	private void enterTraffic(TrafficIncident incident) {
+		if(curIncident != null && !curIncident.equals(incident)) {
+			throw new IllegalStateException("truck is already in a traffic incident. This is likely a bug in the updateTrafficMode method.");
+		}
+		this.speed = incident.getSpeed();
+		curIncident = incident;
+	}
+	
+	private void leaveTraffic(TrafficIncident incident) {
+		this.speed = route.getSegment(curRouteSegment).getSpeed();
+		curIncident = null;
+	}
+
+	public TrafficIncident getCurIncident() {
+		return curIncident;
+	}
+
+	public void setCurIncident(TrafficIncident curIncident) {
+		this.curIncident = curIncident;
+	}
+
+	public List<TrafficIncident> getTrafficIncidents() {
+		return incidents;
+	}
+	
+	public void addTrafficIncident(TrafficIncident incident) {
+		if(incident == null) {
+			throw new IllegalArgumentException("must not be null");
+		}
+		this.incidents.add(incident);
+	}
+	
+	public boolean hasArrived() {
+		return this.pos.equals(route.getGoal());
+	}
+	
+	
+	
 
 }

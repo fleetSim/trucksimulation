@@ -45,7 +45,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		SharedData sd = vertx.sharedData();
 		simulationStatus = sd.getLocalMap("simStatusMap");
 		
-		//createSimulationData();
+		createSimulationData();
 		
 		vertx.eventBus().consumer("simulation.start", this::startSimulation);
 		vertx.eventBus().consumer("simulation.stop", this::stopSimulation);
@@ -122,7 +122,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		Position munich = new Position(48.135125, 11.581981);
 		
 		String to = gson.toJson(factoryStuttgart);
-		String from = gson.toJson(munich);
+		String from = gson.toJson(berlin);
 		
 		JsonObject msg = new JsonObject().put("from", new JsonObject(from)).put("to", new JsonObject(to));
 		

@@ -155,11 +155,18 @@ public class Route {
 		return segments;
 	}
 	
-	public void setSegments(RouteSegment[] segments) {
+	/**
+	 * Sets the route's segments and updates start and goal accordingly.
+	 * @param segments
+	 */
+	public void setSegments(RouteSegment... segments) {
 		if(segments == null) {
 			throw new IllegalArgumentException("segments must not be null");
 		}
 		this.segments = segments;
+		this.start = segments[0].getPoint(0);
+		RouteSegment lastSeg = segments[segments.length-1];
+		this.goal = lastSeg.getPoint(lastSeg.getSize()-1);
 	}
 
 	@Override
