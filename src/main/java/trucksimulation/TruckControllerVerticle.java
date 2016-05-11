@@ -80,6 +80,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 				for(JsonObject truckJson : res.result()) {
 					Truck truck = new Truck(truckJson.getString("_id"));
 					truck.setRouteId(truckJson.getString("route"));
+					simulation.addTruck(truck);
 					assignRoute(simId, truck);
 				}
 				loadTrafficIncidents(simId);

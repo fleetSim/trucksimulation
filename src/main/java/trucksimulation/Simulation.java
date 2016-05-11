@@ -55,7 +55,9 @@ public class Simulation {
 	 * @see #addTrafficIncident(TrafficIncident, List)
 	 */
 	public void start() {
+		LOGGER.info("Simulation start requested for simulation " + id);
 		CompositeFuture.all(allRoutesLoaded, allIncidentsAssigned).setHandler(h -> {
+			LOGGER.info("simulation initialisation completed, starting simulation.");
 			for(Truck truck : route2truckMap.values()) {
 				//FIXME: multiple trucks may drive the same route, needs different data structure
 				startMoving(truck);
@@ -129,6 +131,7 @@ public class Simulation {
 			}
 			incidentCount--;
 			if(incidentCount == 0) {
+				LOGGER.info("Assignment of traffic incidents completed in simulation " + id);
 				allIncidentsAssigned.complete();
 			}
 		});
@@ -154,6 +157,7 @@ public class Simulation {
 		route2truckMap.get(routeId).setRoute(route);
 		truckCount--;
 		if(truckCount == 0) {
+			LOGGER.info("Assignment of truck routes completed in simulation " + id);
 			allRoutesLoaded.complete();
 		}
 	}
@@ -183,6 +187,10 @@ public class Simulation {
 	}
 
 	public void setIncidentCount(int incidentCount) {
+		if(incidentCount == 0) {
+			LOGGER.info("No traffic incidents expected for simulation " + id);
+			allIncidentsAssigned.complete();
+		}
 		this.incidentCount = incidentCount;
 	}
 
