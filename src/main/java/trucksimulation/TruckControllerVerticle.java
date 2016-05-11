@@ -2,22 +2,23 @@ package trucksimulation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.SharedData;
+import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoClient;
 import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
@@ -70,7 +71,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 			msg.fail(400, "Simulation is already running.");
 			return;
 		}
-		simulations.put(simId, new Simulation());
+		simulations.put(simId, new Simulation(simId, vertx));
 		
 		JsonObject trucksQuery = new JsonObject().put("simulation", simId);
 		mongo.find("trucks", trucksQuery, res -> {
@@ -79,8 +80,11 @@ public class TruckControllerVerticle extends AbstractVerticle {
 			} else {
 				msg.reply("ok");
 				setRunningStatus(simId, true);
-				for(JsonObject truck : res.result()) {
-					initAndStart(simId, truck);
+				simulations.get(simId).setTruckCount(res.result().size());
+				for(JsonObject truckJson : res.result()) {
+					Truck truck = new Truck(truckJson.getString("_id"));
+					truck.setRouteId(truckJson.getString("route"));
+					assignRoute(truck, truckJson.getString("route"));
 				}
 			}
 		});		
@@ -93,31 +97,58 @@ public class TruckControllerVerticle extends AbstractVerticle {
 	 * @param simId
 	 * @param truck
 	 */
-	private void initAndStart(String simId, JsonObject truck) {
+	private void assignRoute(Truck truck, String routeId) {
 		Gson gson = Serializer.get();
-		final Truck t = new Truck(truck.getString("_id"));
-		
-		JsonObject routeQuery = new JsonObject().put("_id", truck.getString("route"));
+		JsonObject routeQuery = new JsonObject().put("_id", routeId);
 		
 		mongo.findOne("routes", routeQuery, new JsonObject(), r -> {
 			Route route = gson.fromJson(r.result().toString(), Route.class);
-			t.setRoute(route);
-			
-			JsonObject geometry = new JsonObject().put("$geometry", r.result().getJsonObject("segments"));
-			JsonObject geoIntersects = new JsonObject().put("$geoIntersects", geometry);
-			JsonObject query = new JsonObject().put("simulation", simId).put("start", geoIntersects).put("end", geoIntersects);
-			
+			truck.setRoute(route);
+		});
+	}
+	
+	
+	/**
+	 * Loads all traffic incidents which belong to the simulation and assigns incidents to
+	 * trucks which are affected by those incidents.
+	 * 
+	 * @param simId the simulation id
+	 */
+	@SuppressWarnings("unchecked")
+	private void loadTrafficIncidents(String simId) {
+		Gson gson = Serializer.get();
+		JsonObject query = new JsonObject().put("simulation", simId);
+		
+		Simulation simulation = simulations.get(simId);
+		simulation.getAllRoutesLoaded().setHandler(h -> {
 			mongo.find("traffic", query, trafficResult -> {
 				if(trafficResult.result() != null) {
-					for(JsonObject ti : trafficResult.result()) {
-						TrafficIncident incident = gson.fromJson(ti.toString(), TrafficIncident.class);
-						t.addTrafficIncident(incident);
+					simulation.setIncidentCount(trafficResult.result().size());
+					
+					for(JsonObject incidentJson : trafficResult.result()) {
+						JsonObject intersectionQuery = buildIntersectionQuery(incidentJson, simId);
+						FindOptions idFieldOnly = new FindOptions().setFields(new JsonObject().put("_id", true));
+						
+						mongo.findWithOptions("routes", intersectionQuery, idFieldOnly, routes -> {
+							if(routes.result() != null && !routes.result().isEmpty()) {
+								TrafficIncident trafficIncident = gson.fromJson(incidentJson.toString(), TrafficIncident.class);
+								List<String> routeIds = routes.result().stream().map(c -> c.getString("_id")).collect(Collectors.toList());
+								simulation.addTrafficIncident(trafficIncident, routeIds);
+							}
+						});
 					}
-				}							
-				long timer = startMoving(t);
-				registerTimer(simId, timer);
+				}
 			});
 		});
+	}
+	
+	private JsonObject buildIntersectionQuery(JsonObject traffic, String simId) {
+		//TODO: filter by simulation id
+		JsonObject startGeometry = new JsonObject().put("$geometry", traffic.getJsonObject("start"));
+		JsonObject endGeometry = new JsonObject().put("$geometry", traffic.getJsonObject("end"));
+		JsonObject intersectsStartAndEnd = new JsonObject().put("$geoIntersects", startGeometry).put("$geoIntersects", endGeometry);
+		JsonObject query = new JsonObject().put("segments", intersectsStartAndEnd);
+		return query;
 	}
 	
 	private void registerTimer(String simulationId, long timerId) {

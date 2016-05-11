@@ -19,6 +19,7 @@ public class Truck {
 	
 	private String id;
 	private Route route;
+	private String routeId;
 	private TelemetryBox telemetryBox = new TelemetryBox();
 	private TelemetryData data;
 	private List<TrafficIncident> incidents = new ArrayList<>();
@@ -227,6 +228,14 @@ public class Truck {
 		this.incidents.add(incident);
 	}
 	
+	public String getRouteId() {
+		return routeId;
+	}
+
+	public void setRouteId(String routeId) {
+		this.routeId = routeId;
+	}
+
 	public boolean hasArrived() {
 		return this.pos.equals(route.getGoal());
 	}
