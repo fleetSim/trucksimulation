@@ -1,9 +1,7 @@
 package trucksimulation;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -11,7 +9,6 @@ import com.google.gson.Gson;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -23,7 +20,6 @@ import io.vertx.ext.mongo.MongoClient;
 import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
 import trucksimulation.traffic.TrafficIncident;
-import trucksimulation.trucks.DestinationArrivedException;
 import trucksimulation.trucks.Truck;
 
 public class TruckControllerVerticle extends AbstractVerticle {

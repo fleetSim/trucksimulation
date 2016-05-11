@@ -2,8 +2,10 @@ package trucksimulation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -24,17 +26,22 @@ public class Simulation {
 	
 	private String id;
 	private Vertx vertx;
-	private Map<String, Truck> route2truckMap = new HashMap<>();
+	private Map<String, HashSet<Truck>> route2trucksMap = new HashMap<>();
+	private List<Truck> trucks = new ArrayList<>();
+	
 	private List<Long> timerIds = new ArrayList<>();
 	
 	private int truckCount;
 	private int incidentCount;
 	private Future<Boolean> allRoutesLoaded = Future.future();
 	private Future<Boolean> allIncidentsAssigned = Future.future();
+	/**
+	 * interval in which the trucks' positions should be updated in the simulation.
+	 */
+	private long intervalMs = 1000;
 	
 	public Simulation(String simulationId) {
 		this.id = simulationId;
-		
 	}
 	
 	public Simulation(String simulationId, Vertx vertx) {
@@ -58,8 +65,7 @@ public class Simulation {
 		LOGGER.info("Simulation start requested for simulation " + id);
 		CompositeFuture.all(allRoutesLoaded, allIncidentsAssigned).setHandler(h -> {
 			LOGGER.info("simulation initialisation completed, starting simulation.");
-			for(Truck truck : route2truckMap.values()) {
-				//FIXME: multiple trucks may drive the same route, needs different data structure
+			for(Truck truck : trucks) {
 				startMoving(truck);
 			}
 		});
@@ -72,7 +78,7 @@ public class Simulation {
 	 * @return id of the timer, so that it can be cancelled
 	 */
 	private long startMoving(Truck t) {
-		long tId = vertx.setPeriodic(1000, timerId -> {
+		long tId = vertx.setPeriodic(intervalMs, timerId -> {
 			try {
 				t.move();
 				vertx.eventBus().publish("trucks", t.getJsonData());
@@ -98,12 +104,16 @@ public class Simulation {
 	
 	
 	public void addTruck(Truck truck) {
-		this.route2truckMap.put(truck.getRouteId(), truck);
+		this.trucks.add(truck);
+		if(!route2trucksMap.containsKey(truck.getRouteId())) {
+			route2trucksMap.put(truck.getRouteId(), new HashSet<>());
+		}
+		this.route2trucksMap.get(truck.getRouteId()).add(truck);
 	}
 	
 	public void removeTruck(Truck truck) {
-		//FIXME: need different data structure
-		this.route2truckMap.remove(truck.getRouteId());
+		trucks.remove(truck);
+		route2trucksMap.remove(truck.getRouteId());
 	}
 	
 	/**
@@ -122,11 +132,11 @@ public class Simulation {
 	public void addTrafficIncident(TrafficIncident incident, List<String> routeIds) {
 		allRoutesLoaded.setHandler(h -> {
 			for(String routeId : routeIds) {
-				Truck truck = route2truckMap.get(routeId);
-				if(truck != null) {
-					truck.addTrafficIncident(incident);
+				Set<Truck> trucks = route2trucksMap.get(routeId);
+				if(trucks != null) {
+					trucks.forEach(t -> t.addTrafficIncident(incident));
 				} else {
-					throw new IllegalArgumentException("Truck with route id " + routeId + " not found in simulation.");
+					throw new IllegalArgumentException("No trucks with route id " + routeId + " could be found in simulation " + id);
 				}
 			}
 			incidentCount--;
@@ -154,11 +164,16 @@ public class Simulation {
 	}
 	
 	public void addRoute(String routeId, Route route) {
-		route2truckMap.get(routeId).setRoute(route);
-		truckCount--;
-		if(truckCount == 0) {
-			LOGGER.info("Assignment of truck routes completed in simulation " + id);
-			allRoutesLoaded.complete();
+		Set<Truck> trucks = route2trucksMap.get(routeId);
+		if(trucks != null) {
+			trucks.forEach(t -> {
+				t.setRoute(route);
+				truckCount--;
+				if(truckCount == 0) {
+					LOGGER.info("Assignment of truck routes completed in simulation " + id);
+					allRoutesLoaded.complete();
+				}
+			});
 		}
 	}
 
@@ -192,6 +207,18 @@ public class Simulation {
 			allIncidentsAssigned.complete();
 		}
 		this.incidentCount = incidentCount;
+	}
+
+	public long getIntervalMs() {
+		return intervalMs;
+	}
+
+	public void setIntervalMs(long intervalMs) {
+		this.intervalMs = intervalMs;
+	}
+
+	public List<Truck> getTrucks() {
+		return trucks;
 	}
 
 }
