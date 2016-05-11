@@ -42,15 +42,19 @@ public class TelemetryData {
 	}
 	
 	private Position deteriorate(Position pos) {
-		double lat = pos.getLat() * getDeteriorationfactor();
-		double lon = pos.getLon() * getDeteriorationfactor();
+		double lat = pos.getLat() + getDeterioration();
+		double lon = pos.getLon() + getDeterioration();
 		Position newPos = new Position(lat, lon);
 		horizontalAccuracy = (int) Math.round(newPos.getDistance(pos));
 		return newPos;
 	}
 	
-	private double getDeteriorationfactor() {
-		return 1 + (random.nextDouble() - 0.5) / 600000;
+	/**
+	 * Returns a uniformly distributed value which can be added to the gps coordinates.
+	 * @return
+	 */
+	private double getDeterioration() {
+		return (random.nextDouble() - 0.5)/10000;
 	}
 	
 	public int getVerticalAccuracy() {

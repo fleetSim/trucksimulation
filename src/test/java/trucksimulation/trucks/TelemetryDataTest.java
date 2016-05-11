@@ -19,11 +19,10 @@ public class TelemetryDataTest {
 			if(dist > maxDist) {
 				maxDist = dist;
 			}
-			Assert.assertTrue("position shouldn't be too far away.", dist < 50);
+			Assert.assertTrue("position shouldn't be too far away (distance was "+ dist + ").", dist < 50);
 		}
 		Assert.assertTrue(maxDist > 0);
-		System.out.println("max dist was " + maxDist);
-		
+		System.out.println("maximum distance to true position due to GPS data deterioration was " + maxDist + "m");
 	}
 
 }
