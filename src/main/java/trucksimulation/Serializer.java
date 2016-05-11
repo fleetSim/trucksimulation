@@ -16,5 +16,10 @@ public interface Serializer {
 		Gson gson = builder.create();
 		return gson;
 	}
+	
+	static GsonBuilder getBuilder() {
+		GsonBuilder builder = new GsonBuilder();
+		return builder;
+	}
 
 }

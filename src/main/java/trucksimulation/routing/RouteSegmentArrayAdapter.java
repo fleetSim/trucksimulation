@@ -50,9 +50,15 @@ public class RouteSegmentArrayAdapter implements JsonSerializer<RouteSegment[]>,
 	@Override
 	public RouteSegment[] deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
 			throws JsonParseException {
-		JsonObject geojson = json.getAsJsonObject();
-		JsonArray arr = geojson.get("geometries").getAsJsonArray();
-		return Serializer.get().fromJson(arr, RouteSegment[].class);
+		if(json.isJsonObject()) {
+			JsonObject geojson = json.getAsJsonObject();
+			JsonArray arr = geojson.get("geometries").getAsJsonArray();
+			GsonBuilder builder = Serializer.getBuilder();
+			builder.registerTypeAdapter(RouteSegment.class, new RouteSegmentAdapter());
+			return builder.create().fromJson(arr, RouteSegment[].class);	
+		} else {
+			throw new IllegalStateException("could not deserialize segments field, was expecting an object for " + typeOfT);
+		}
 	}
 	
 

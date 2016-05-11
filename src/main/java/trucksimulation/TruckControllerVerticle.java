@@ -2,9 +2,11 @@ package trucksimulation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import com.google.gson.Gson;
 
@@ -19,6 +21,7 @@ import io.vertx.core.shareddata.SharedData;
 import io.vertx.ext.mongo.MongoClient;
 import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
+import trucksimulation.traffic.TrafficIncident;
 import trucksimulation.trucks.DestinationArrivedException;
 import trucksimulation.trucks.Truck;
 
@@ -35,7 +38,10 @@ public class TruckControllerVerticle extends AbstractVerticle {
 	/**
 	 * Maps simulation id's to a list of periodic timers that are currently running as part of the simulation.
 	 */
+	@Deprecated
 	private Map<String, ArrayList<Long>> simTimerMap = new HashMap<String, ArrayList<Long>>();
+	
+	private HashMap<String, Simulation> simulations = new HashMap<String, Simulation>();
 	
 	@Override
 	public void start() throws Exception {
@@ -45,7 +51,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		SharedData sd = vertx.sharedData();
 		simulationStatus = sd.getLocalMap("simStatusMap");
 		
-		createSimulationData();
+		//createSimulationData();
 		
 		vertx.eventBus().consumer("simulation.start", this::startSimulation);
 		vertx.eventBus().consumer("simulation.stop", this::stopSimulation);
@@ -58,13 +64,14 @@ public class TruckControllerVerticle extends AbstractVerticle {
 	 * @param msg
 	 */
 	private void startSimulation(Message<JsonObject> msg) {
-		Gson gson = Serializer.get();
 		JsonObject simulationQuery = msg.body();
 		String simId = simulationQuery.getString("_id");
 		if(isSimulationRunning(simId)) {
 			msg.fail(400, "Simulation is already running.");
 			return;
 		}
+		simulations.put(simId, new Simulation());
+		
 		JsonObject trucksQuery = new JsonObject().put("simulation", simId);
 		mongo.find("trucks", trucksQuery, res -> {
 			if(res.failed()) {
@@ -73,17 +80,44 @@ public class TruckControllerVerticle extends AbstractVerticle {
 				msg.reply("ok");
 				setRunningStatus(simId, true);
 				for(JsonObject truck : res.result()) {
-					final Truck t = new Truck(truck.getString("_id"));
-					JsonObject routeQuery = new JsonObject().put("_id", truck.getString("route"));
-					mongo.findOne("routes", routeQuery, new JsonObject(), r -> {
-						Route route = gson.fromJson(r.result().toString(), Route.class);
-						t.setRoute(route);
-						long timer = startMoving(t);
-						registerTimer(simId, timer);
-					});
+					initAndStart(simId, truck);
 				}
 			}
 		});		
+	}
+
+
+	/**
+	 * Resolves references to the trucks route and checks if traffic incidents are on the route.
+	 * 
+	 * @param simId
+	 * @param truck
+	 */
+	private void initAndStart(String simId, JsonObject truck) {
+		Gson gson = Serializer.get();
+		final Truck t = new Truck(truck.getString("_id"));
+		
+		JsonObject routeQuery = new JsonObject().put("_id", truck.getString("route"));
+		
+		mongo.findOne("routes", routeQuery, new JsonObject(), r -> {
+			Route route = gson.fromJson(r.result().toString(), Route.class);
+			t.setRoute(route);
+			
+			JsonObject geometry = new JsonObject().put("$geometry", r.result().getJsonObject("segments"));
+			JsonObject geoIntersects = new JsonObject().put("$geoIntersects", geometry);
+			JsonObject query = new JsonObject().put("simulation", simId).put("start", geoIntersects).put("end", geoIntersects);
+			
+			mongo.find("traffic", query, trafficResult -> {
+				if(trafficResult.result() != null) {
+					for(JsonObject ti : trafficResult.result()) {
+						TrafficIncident incident = gson.fromJson(ti.toString(), TrafficIncident.class);
+						t.addTrafficIncident(incident);
+					}
+				}							
+				long timer = startMoving(t);
+				registerTimer(simId, timer);
+			});
+		});
 	}
 	
 	private void registerTimer(String simulationId, long timerId) {
