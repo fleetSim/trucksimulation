@@ -66,7 +66,8 @@ public class Simulation {
 		CompositeFuture.all(allRoutesLoaded, allIncidentsAssigned).setHandler(h -> {
 			LOGGER.info("simulation initialisation completed, starting simulation.");
 			for(Truck truck : trucks) {
-				startMoving(truck);
+				long timerId = startMoving(truck);
+				timerIds.add(timerId);
 			}
 		});
 	}

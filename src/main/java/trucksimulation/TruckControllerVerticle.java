@@ -63,6 +63,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 			return;
 		}
 		Simulation simulation = new Simulation(simId, vertx);
+		simulation.setIntervalMs(intervalMS);
 		simulations.put(simId, simulation);
 		
 		JsonObject trucksQuery = new JsonObject().put("simulation", simId);
@@ -91,8 +92,9 @@ public class TruckControllerVerticle extends AbstractVerticle {
 	 * @param msg a JsonObject with an "_id" field containing the id string fo the simulation.
 	 */
 	private void stopSimulation(Message<JsonObject> msg) {
-		String simId = msg.body().getString("id");
+		String simId = msg.body().getString("_id");
 		if(simulations.containsKey(simId)) {
+			LOGGER.info("Stopping simulation " + simId + " in verticle " + this.deploymentID());
 			Simulation simulation = simulations.get(simId);
 			simulation.stop();
 			simulations.remove(simId);
