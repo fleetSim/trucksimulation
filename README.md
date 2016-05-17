@@ -21,6 +21,9 @@ incident document.
 The main configuration is a json file. It can be specified when running the application 
 with the `-conf conf.json` option.
 
+Initially you can run `mvn compile exec:java@bootstrap` to load a demo simulation
+into the datastore and to index the collections in mongodb.
+
 ## Receiving simulated telematics data
 
 ### Eventbus

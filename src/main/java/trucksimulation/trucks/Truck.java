@@ -70,7 +70,7 @@ public class Truck {
 	 * Throws a DestinationArrivedException if the truck is already at the last point of the route.
 	 */
 	public void move() {
-		move(speed);	
+		move(speed);
 	}
 	
 	public JsonObject asGeoJsonFeature() {

@@ -24,7 +24,6 @@ import trucksimulation.trucks.Truck;
 
 public class TruckControllerVerticle extends AbstractVerticle {
 	
-	private static final int MIN_DISTANCE = 50000;
 	private static final Logger LOGGER = LoggerFactory.getLogger(TruckControllerVerticle.class);
 	private MongoClient mongo;
 	private int intervalMS;

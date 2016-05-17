@@ -11,6 +11,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * Listens on the eventbus for messages from trucks and forwards them to a http server.
+ *
+ */
 public class HttpNotificationVerticle extends AbstractVerticle {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(HttpNotificationVerticle.class);
@@ -23,7 +27,6 @@ public class HttpNotificationVerticle extends AbstractVerticle {
 			LOGGER.error("http receiver url is not valid. No notifications will be posted. " + ex.getMessage());
 			vertx.undeploy(this.deploymentID());
 		}
-		
 	}
 
 	private void postToHttpListener() throws MalformedURLException {
@@ -31,7 +34,6 @@ public class HttpNotificationVerticle extends AbstractVerticle {
 		String host = url.getHost();
 		int port = url.getPort();
 		String path = url.getPath();
-		
 		
 		HttpClientOptions opts = new HttpClientOptions().setDefaultHost(host).setDefaultPort(port);
 		HttpClient client = vertx.createHttpClient(opts);

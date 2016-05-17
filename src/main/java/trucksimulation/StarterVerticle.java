@@ -25,11 +25,6 @@ public class StarterVerticle extends AbstractVerticle {
 					LOGGER.error("Deployment of TruckCOntroller failed." + e.cause());
 				}
 			});
-//			vertx.deployVerticle(new BootstrapVerticle(), deplOptions, d -> {
-//				if (d.failed()) {
-//					LOGGER.error("Deployment of BootstrapVerticle failed." + d.cause());
-//				}
-//			});
 		});
 
 		vertx.deployVerticle(new Server(), deplOptions, e -> {

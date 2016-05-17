@@ -8,6 +8,7 @@
 	<properties>
 		<vertx.version>3.2.1</vertx.version>
 		<main.verticle>trucksimulation.StarterVerticle</main.verticle>
+		<bootstrap.verticle>trucksimulation.BootstrapVerticle</bootstrap.verticle>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -109,6 +110,24 @@
 							<arguments>
 								<argument>run</argument>
 								<argument>${main.verticle}</argument>
+								<argument>-conf</argument>
+								<argument>conf.json</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					
+					<execution>
+						<id>bootstrap</id>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>io.vertx.core.Launcher</mainClass>
+							<arguments>
+								<argument>run</argument>
+								<argument>${bootstrap.verticle}</argument>
+								<argument>-conf</argument>
+								<argument>conf.json</argument>
 							</arguments>
 						</configuration>
 					</execution>

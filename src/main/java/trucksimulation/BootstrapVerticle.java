@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -14,11 +15,11 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
 import trucksimulation.routing.Position;
+import trucksimulation.routing.RouteCalculationVerticle;
 
 /**
  * Verticle for performing bootstrapping tasks such as
  * setting up the database and loading initial data.
- * 
  *
  */
 public class BootstrapVerticle extends AbstractVerticle {
@@ -28,12 +29,68 @@ public class BootstrapVerticle extends AbstractVerticle {
 	
 	@Override
 	public void start() throws Exception {
+		DeploymentOptions routeMgrOptions = new DeploymentOptions().setWorker(true).setConfig(config());
+		
 		mongo = MongoClient.createShared(vertx, config().getJsonObject("mongodb", new JsonObject()));
 		
-		createDemoSimulation();		
+		vertx.deployVerticle(new RouteCalculationVerticle(), routeMgrOptions, w -> {
+			if (w.failed()) {
+				LOGGER.error("Deployment of RouteManager failed." + w.cause());
+			} else {
+				createDemoSimulation();
+				indexRoutes();
+				indexTraffic();
+				indexTrucks();
+			}
+		});
+			
 	}
 	
 	
+	private void indexRoutes() {
+		JsonObject key = new JsonObject().put("segments", "2dsphere").put("simulation", 1);
+		JsonObject indexCmd = new JsonObject() //
+				.put("createIndexes", "routes") //
+				.put("indexes", new JsonArray().add(new JsonObject().put("key", key).put("name", "segments-simulation")));
+		
+		mongo.runCommand("createIndexes", indexCmd, res-> {
+			if(res.succeeded()) {
+				LOGGER.info("created index for routes: " + res.result());
+			} else {
+				LOGGER.error(res.cause());
+			}
+		});
+	}
+	
+	private void indexTraffic() {
+		JsonObject key = new JsonObject().put("start", "2dsphere").put("end", "2dsphere").put("simulation", 1);
+		JsonObject indexCmd = new JsonObject() //
+				.put("createIndexes", "traffic") //
+				.put("indexes", new JsonArray().add(new JsonObject().put("key", key).put("name", "start-end-simulation")));
+		mongo.runCommand("createIndexes", indexCmd, res-> {
+			if(res.succeeded()) {
+				LOGGER.info("created index for traffic: " + res.result());
+			} else {
+				LOGGER.error(res.cause());
+			}
+		});
+	}
+	
+	private void indexTrucks() {
+		JsonObject key = new JsonObject().put("simulation", 1);
+		JsonObject indexCmd = new JsonObject() //
+				.put("createIndexes", "trucks") //
+				.put("indexes", new JsonArray().add(new JsonObject().put("key", key).put("name", "simulation")));
+		mongo.runCommand("createIndexes", indexCmd, res-> {
+			if(res.succeeded()) {
+				LOGGER.info("created index for trucks: " + res.result());
+			} else {
+				LOGGER.error(res.cause());
+			}
+		});
+	}
+
+
 	private void createDemoSimulation() {
 		// create a few routes
 		Position factoryStuttgart = new Position(48.772510, 9.165465);
