@@ -17,12 +17,33 @@ enters a traffic incident, its speed is lowered to the value specified in the tr
 incident document.
 
 
+##m Sample Data
+Initially you can run `mvn compile exec:java@bootstrap` to load a demo simulation
+into the datastore and to index the collections in mongodb.
+
 ## Configuration
 The main configuration is a json file. It can be specified when running the application 
 with the `-conf conf.json` option.
 
-Initially you can run `mvn compile exec:java@bootstrap` to load a demo simulation
-into the datastore and to index the collections in mongodb.
+An exemplary configuration file might look like this:
+
+```json
+{
+	"simulation": {
+		"osmFile": "osm/germany-latest.osm.pbf",
+		"msgInterval": 1,
+		"receiverUrl": "http://localhost:1088/trucks",
+		"interval_ms": 500
+	},
+	"mongodb": {
+		"db_name": "trucksimulation"
+	}
+}
+```
+
+Make sure that the osmFile exists, downloads are e.g. provided 
+by [download.geofabrik.de](http://download.geofabrik.de). The internally used graphhopper library needs
+to process the provided osm file when first calculating a route. This may take some time initially.
 
 ## Receiving simulated telematics data
 
@@ -31,7 +52,9 @@ The simulation uses vert.x 3 and sends messages via the vert.x eventbus.
 Run the simulation server and an adapter verticle in the same cluster to receive those messages.
 
 ### Receiving HTTP requests
-The simulation can be configured to send HTTP POST requests to a specific URL.
+HTTP Post reuests will be sent to the `receiverUrl` specified in the configuration file.
+The URL must contain the protocol and may optionally contain port and path.
+
 
 ### SockJS
 Events are emitted using the vert.x sockjs bridge.  
