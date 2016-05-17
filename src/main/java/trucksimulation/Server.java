@@ -32,10 +32,11 @@ public class Server extends AbstractVerticle {
 	}
 	
 	private void setUpRoutes(Router router) {
-		//router.route("/api/v1/simulations/{simId}");
 		router.get("/api/v1/simulations/routes/:routeId").handler(this::getRoute);
 		router.get("/api/v1/simulations/routes").handler(this::getRoutes);
 		router.get("/api/v1/simulations/:simId/trucks").handler(this::getTrucks);
+		router.get("/api/v1/simulations/:simId/traffic").handler(this::getTraffic);
+		router.post("/api/v1/simulations/:simId/traffic").handler(this::createTraffic);
 		router.post("/api/v1/simulations/:simId/start").handler(this::startSimulation);
 		router.post("/api/v1/simulations/:simId/stop").handler(this::stopSimulation);
 		router.get("/api/v1/simulations/:simId").handler(this::getSimulation);
@@ -89,6 +90,36 @@ public class Server extends AbstractVerticle {
 				ctx.fail(res.cause());
 			} else {
 				JsonResponse.build(ctx).end(res.result().toString());
+			}
+		});
+	}
+	
+	private void getTraffic(RoutingContext ctx) {
+		JsonObject query = new JsonObject().put("simulation", ctx.request().getParam("simId"));
+		mongo.find("traffic", query, res -> {
+			if(res.failed()) {
+				ctx.fail(res.cause());
+			} else {
+				JsonResponse.build(ctx).end(res.result().toString());
+			}
+		});
+	}
+	
+	/**
+	 * Inserts a new traffic document and returns the created document.
+	 * @param ctx
+	 */
+	private void createTraffic(RoutingContext ctx) {
+		JsonObject trafficIncident = ctx.getBodyAsJson();
+		trafficIncident.put("simulation", ctx.request().getParam("simId"));
+		
+		mongo.insert("traffic", trafficIncident, res -> {
+			if(res.failed()) {
+				ctx.fail(res.cause());
+			} else {
+				String id = res.result();
+				trafficIncident.put("_id", id);
+				JsonResponse.build(ctx).setStatusCode(201).end(trafficIncident.toString());
 			}
 		});
 	}

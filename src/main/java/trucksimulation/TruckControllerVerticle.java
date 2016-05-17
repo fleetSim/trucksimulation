@@ -43,8 +43,6 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		SharedData sd = vertx.sharedData();
 		simulationStatus = sd.getLocalMap("simStatusMap");
 		
-		//createSimulationData();
-		
 		vertx.eventBus().consumer("simulation.start", this::startSimulation);
 		vertx.eventBus().consumer("simulation.stop", this::stopSimulation);
 	}	
@@ -177,37 +175,6 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		return isRunning != null && isRunning.booleanValue() == true;
 	}
 	
-	/**
-	 * @deprecated should be moved into a bootstrap verticle which can be called separately
-	 */
-	@Deprecated
-	private void createSimulationData() {
-		Gson gson = new Gson();		
-		Position factoryStuttgart = new Position(48.772510, 9.165465);
-		Position berlin = new Position(52.413296, 13.421140);
-		Position hamburg = new Position(53.551085, 9.993682);
-		Position munich = new Position(48.135125, 11.581981);
-		
-		String to = gson.toJson(factoryStuttgart);
-		String from = gson.toJson(berlin);
-		
-		JsonObject msg = new JsonObject().put("from", new JsonObject(from)).put("to", new JsonObject(to));
-		
-		// calculate routes
-		vertx.eventBus().send("routes.calculate", msg, (AsyncResult<Message<String>> rpl) -> {
-			if(rpl.succeeded()) {
-				JsonObject route = new JsonObject(rpl.result().body());
-				
-				mongo.insert("routes", route, res -> {
-					if(res.succeeded()) {
-						LOGGER.info("Inserted new route " + res.result());
-					} else {
-						LOGGER.error("Route insertion failed: ", res.cause());
-					}
-				});
-			}
-		});
-	}
 
 	/**
 	 * @deprecated should be moved into a demo verticle which can be run instead of this one when the server is started in demo mode
