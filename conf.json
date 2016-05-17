@@ -2,7 +2,7 @@
 	"simulation": {
 		"osmFile": "osm/germany-latest.osm.pbf",
 		"msgInterval": 1,
-		"receiverUrl": "localhost:1088/trucks"
+		"receiverUrl": "http://localhost:1088/trucks"
 	},
 	"mongodb": {
 		"db_name": "trucksimulation"

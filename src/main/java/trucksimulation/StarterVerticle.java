@@ -25,16 +25,22 @@ public class StarterVerticle extends AbstractVerticle {
 					LOGGER.error("Deployment of TruckCOntroller failed." + e.cause());
 				}
 			});
-			vertx.deployVerticle(new BootstrapVerticle(), deplOptions, d -> {
-				if (d.failed()) {
-					LOGGER.error("Deployment of BootstrapVerticle failed." + d.cause());
-				}
-			});
+//			vertx.deployVerticle(new BootstrapVerticle(), deplOptions, d -> {
+//				if (d.failed()) {
+//					LOGGER.error("Deployment of BootstrapVerticle failed." + d.cause());
+//				}
+//			});
 		});
 
 		vertx.deployVerticle(new Server(), deplOptions, e -> {
 			if (e.failed()) {
 				LOGGER.error("Deployment of server failed. " + e.cause());
+			}
+		});
+		
+		vertx.deployVerticle(new HttpNotificationVerticle(), deplOptions, h -> {
+			if (h.failed()) {
+				LOGGER.error("Deployment of http notification verticle failed. " + h.cause());
 			}
 		});
 	}

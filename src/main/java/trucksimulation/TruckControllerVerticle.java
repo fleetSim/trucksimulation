@@ -173,57 +173,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 	private boolean isSimulationRunning(String simulationId) {
 		Boolean isRunning = simulationStatus.get(simulationId);
 		return isRunning != null && isRunning.booleanValue() == true;
-	}
-	
+	}	
 
-	/**
-	 * @deprecated should be moved into a demo verticle which can be run instead of this one when the server is started in demo mode
-	 * @param num number of trucks to simulate
-	 */
-	@Deprecated
-	private void startDemoSimulation(int num) {
-		mongo.find("cities", new JsonObject(), res -> {
-				int numTrucks = num;
-				if(res.result().size() < num) {
-					numTrucks = res.result().size();
-				}
-				createTrucksAndRoutes(numTrucks, res.result());
-		});
-	}
-	
-	/**
-	 * @deprecated should be moved into a demo verticle which can be run instead of this one when the server is started in demo mode
-	 * @param num number of trucks to simulate
-	 */
-	@Deprecated
-	private void createTrucksAndRoutes(int num, List<JsonObject> cities) {
-		Random rand = new Random();
-		Gson gson = new Gson();
-
-		while(num > 0) {
-			int idx1 = rand.nextInt(cities.size());
-			int idx2 = rand.nextInt(cities.size());
-			JsonObject start = cities.get(idx1);
-			JsonObject goal = cities.get(idx2);
-			Position startPos = new Position(start.getDouble("lat"), start.getDouble("lon"), start.getString("name"));
-			Position goalPos = new Position(goal.getDouble("lat"), goal.getDouble("lon"), goal.getString("name"));
-			if(startPos.getDistance(goalPos) > MIN_DISTANCE) {
-				String from = gson.toJson(startPos);
-				String to = gson.toJson(goalPos);
-				JsonObject msg = new JsonObject().put("from", new JsonObject(from)).put("to", new JsonObject(to));
-				
-				vertx.eventBus().send("routes.calculate", msg, (AsyncResult<Message<String>> rpl) -> {
-					if(rpl.succeeded()) {
-						Route r = gson.fromJson(rpl.result().body(), Route.class);
-						Truck t = Truck.buildTruck();
-						t.setRoute(r);
-						//FIXME: should use Simulation class
-						//startMoving(t);
-					}
-				});
-				num--;
-			}
-		}
-	}
 	
 }

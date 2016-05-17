@@ -41,8 +41,7 @@ public class Server extends AbstractVerticle {
 		router.post("/api/v1/simulations/:simId/stop").handler(this::stopSimulation);
 		router.get("/api/v1/simulations/:simId").handler(this::getSimulation);
 		router.get("/api/v1/simulations").handler(this::getSimulations);
-	}
-	
+	}	
 	
 	private void getSimulations(RoutingContext ctx) {
 		mongo.find("simulations", new JsonObject(), res -> {
