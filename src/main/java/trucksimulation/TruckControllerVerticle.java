@@ -151,11 +151,10 @@ public class TruckControllerVerticle extends AbstractVerticle {
 	}
 	
 	private JsonObject buildIntersectionQuery(JsonObject traffic, String simId) {
-		//TODO: filter by simulation id
 		JsonObject startGeometry = new JsonObject().put("$geometry", traffic.getJsonObject("start"));
 		JsonObject endGeometry = new JsonObject().put("$geometry", traffic.getJsonObject("end"));
 		JsonObject intersectsStartAndEnd = new JsonObject().put("$geoIntersects", startGeometry).put("$geoIntersects", endGeometry);
-		JsonObject query = new JsonObject().put("segments", intersectsStartAndEnd);
+		JsonObject query = new JsonObject().put("segments", intersectsStartAndEnd).put("simulation", simId);
 		return query;
 	}
 	
