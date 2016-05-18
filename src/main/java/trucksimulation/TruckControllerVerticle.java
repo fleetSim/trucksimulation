@@ -27,6 +27,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TruckControllerVerticle.class);
 	private MongoClient mongo;
 	private int intervalMS;
+	private int msgInterval;
 	/**
 	 * Maps simulation id's to the running state of the simulation (true when running).
 	 */
@@ -38,6 +39,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 	public void start() throws Exception {
 		mongo = MongoClient.createShared(vertx, config().getJsonObject("mongodb", new JsonObject()));
 		intervalMS = config().getJsonObject("simulation", new JsonObject()).getInteger("interval_ms", 1000);
+		msgInterval = config().getJsonObject("simulation", new JsonObject()).getInteger("msgInterval", 1);
 		
 		SharedData sd = vertx.sharedData();
 		simulationStatus = sd.getLocalMap("simStatusMap");
@@ -61,6 +63,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		}
 		Simulation simulation = new Simulation(simId, vertx);
 		simulation.setIntervalMs(intervalMS);
+		simulation.setPublishInterval(msgInterval);
 		simulations.put(simId, simulation);
 		
 		JsonObject trucksQuery = new JsonObject().put("simulation", simId);

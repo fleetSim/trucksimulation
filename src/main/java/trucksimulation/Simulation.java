@@ -253,6 +253,14 @@ public class Simulation {
 		this.intervalMs = intervalMs;
 	}
 
+	public int getPublishInterval() {
+		return publishInterval;
+	}
+
+	public void setPublishInterval(int publishInterval) {
+		this.publishInterval = publishInterval;
+	}
+
 	public List<Truck> getTrucks() {
 		return trucks;
 	}
