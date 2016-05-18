@@ -111,17 +111,6 @@ public class Position {
 		this.name = name;
 	}
 
-
-	public JsonObject asGeoJsonFeature() {
-		JsonObject feature = new JsonObject();
-		JsonObject properties = new JsonObject().put("name", name);
-		JsonObject geometry = new JsonObject()
-				.put("type", "Point")
-				.put("coordinates", new JsonArray().add(lon).add(lat));
-		feature.put("type", "Feature").put("geometry",  geometry).put("properties", properties);
-		return feature;
-	}
-
 	@Override
 	public String toString() {
 		return String.format("(%f,\t %f)", lat, lon);

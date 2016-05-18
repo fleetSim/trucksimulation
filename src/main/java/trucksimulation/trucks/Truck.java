@@ -77,10 +77,6 @@ public class Truck {
 		move(speed);
 	}
 	
-	public JsonObject asGeoJsonFeature() {
-		return pos.asGeoJsonFeature();
-	}
-	
 	private void proceedToNextPoint() {	
 		RouteSegment currentSegment = route.getSegment(curRouteSegment);
 		if(currentSegment.getSize() > curSegmentPoint + 1) {

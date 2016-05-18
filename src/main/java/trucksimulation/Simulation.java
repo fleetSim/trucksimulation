@@ -33,6 +33,7 @@ public class Simulation {
 	private Map<String, HashSet<Truck>> route2trucksMap = new HashMap<>();
 	private List<Truck> trucks = new ArrayList<>();
 	private List<Long> timerIds = new ArrayList<>();
+	private Map<String, Integer> intervalCounters = new HashMap<>();
 	private int truckCount;
 	private int incidentCount;
 	private Future<Boolean> allRoutesLoaded = Future.future();
@@ -47,8 +48,6 @@ public class Simulation {
 	 */
 	private int publishInterval = 5;
 
-	private int intervalCounter;
-	
 	public Simulation(String simulationId) {
 		this.id = simulationId;
 	}
@@ -88,6 +87,7 @@ public class Simulation {
 	 * @return id of the timer, so that it can be cancelled
 	 */
 	private long startMoving(Truck truck) {
+		intervalCounters.put(truck.getId(), 0);
 		long tId = vertx.setPeriodic(intervalMs, timerId -> {
 			try {
 				truck.move();
@@ -112,13 +112,15 @@ public class Simulation {
 	private void publishBoxData(Truck truck) {
 		TelemetryData correctData = truck.getTelemetryBox().getTelemetryData();
 		Gson gson = Serializer.get();
-		JsonObject correctDataJson = new JsonObject(gson.toJson(correctData));
+		JsonObject correctDataJson = new JsonObject(gson.toJson(correctData)).put("truckId", truck.getId());
 		vertx.eventBus().publish("trucks.real", correctDataJson);
 		
-		if(intervalCounter % publishInterval == 0) {
-			intervalCounter = 0;
+		int ctr = intervalCounters.get(truck.getId()) + 1;
+		intervalCounters.put(truck.getId(), ctr);
+		if(ctr % publishInterval == 0) {
+			intervalCounters.put(truck.getId(), 0);
 			TelemetryData inexactData = truck.getTelemetryBoxInexact().getTelemetryData();
-			JsonObject dataJson = new JsonObject(gson.toJson(inexactData));
+			JsonObject dataJson = new JsonObject(gson.toJson(inexactData)).put("truckId", truck.getId());
 			vertx.eventBus().publish("trucks", dataJson);
 		}
 	}
