@@ -34,6 +34,7 @@ public class Server extends AbstractVerticle {
 	private void setUpRoutes(Router router) {
 		router.get("/api/v1/simulations/routes/:routeId").handler(this::getRoute);
 		router.get("/api/v1/simulations/routes").handler(this::getRoutes);
+		router.get("/api/v1/simulations/:simId/trucks/:truckId").handler(this::getTruck);
 		router.get("/api/v1/simulations/:simId/trucks").handler(this::getTrucks);
 		router.get("/api/v1/simulations/:simId/traffic").handler(this::getTraffic);
 		router.post("/api/v1/simulations/:simId/traffic").handler(this::createTraffic);
@@ -85,6 +86,18 @@ public class Server extends AbstractVerticle {
 	private void getTrucks(RoutingContext ctx) {
 		JsonObject query = new JsonObject().put("simulation", ctx.request().getParam("simId"));
 		mongo.find("trucks", query, res -> {
+			if(res.failed()) {
+				ctx.fail(res.cause());
+			} else {
+				JsonResponse.build(ctx).end(res.result().toString());
+			}
+		});
+	}
+	
+	private void getTruck(RoutingContext ctx) {
+		JsonObject query = new JsonObject().put("simulation", ctx.request().getParam("simId"));
+		query.put("_id", ctx.request().getParam("truckId"));
+		mongo.findOne("trucks", query, new JsonObject(), res -> {
 			if(res.failed()) {
 				ctx.fail(res.cause());
 			} else {
