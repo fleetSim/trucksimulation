@@ -17,7 +17,7 @@ enters a traffic incident, its speed is lowered to the value specified in the tr
 incident document.
 
 
-##m Sample Data
+## Sample Data
 Initially you can run `mvn compile exec:java@bootstrap` to load a demo simulation
 into the datastore and to index the collections in mongodb.
 

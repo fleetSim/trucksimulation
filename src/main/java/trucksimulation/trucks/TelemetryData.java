@@ -13,6 +13,7 @@ public class TelemetryData {
 	private int horizontalAccuracy = 5;
 	private double speed;
 	private double bearing;
+	private double temperature = 20.0;
 	private Random random = new Random();
 	
 	
@@ -74,6 +75,12 @@ public class TelemetryData {
 	}
 	public void setBearing(double bearing) {
 		this.bearing = bearing;
+	}
+	public double getTemperature() {
+		return temperature;
+	}
+	public void setTemperature(double temperature) {
+		this.temperature = temperature;
 	}
 
 }

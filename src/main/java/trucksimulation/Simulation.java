@@ -86,6 +86,7 @@ public class Simulation {
 			} catch(DestinationArrivedException ex) {
 				LOGGER.info("Truck has arrived at destination: #" + t.getId());
 				vertx.cancelTimer(timerId);
+				this.timerIds.remove(timerId);
 			} catch (Exception ex) {
 				LOGGER.error("Unexpected error, stopping truck #" + t.getId(), ex);
 				vertx.cancelTimer(timerId);
@@ -154,6 +155,10 @@ public class Simulation {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+	
+	public boolean isRunning() {
+		return timerIds.size() >= 1;
 	}
 
 	public Vertx getVertx() {
