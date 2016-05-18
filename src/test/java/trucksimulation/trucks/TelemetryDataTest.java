@@ -10,7 +10,7 @@ public class TelemetryDataTest {
 	@Test
 	public void testDeterioration() {
 		Position orig = new Position(11.0, 50.0);
-		TelemetryData data = new TelemetryData();
+		TelemetryData data = new TelemetryData("s");
 		double maxDist = 0;
 		for(int i = 0; i< 500; i++) {
 			data.setPosition(orig);

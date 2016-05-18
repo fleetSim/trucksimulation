@@ -6,6 +6,7 @@ import trucksimulation.routing.Position;
 
 public class TelemetryData {
 	
+	private String id;
 	private long timeStamp;
 	private Position position;
 	private double altitude;
@@ -14,9 +15,20 @@ public class TelemetryData {
 	private double speed;
 	private double bearing;
 	private double temperature = 20.0;
-	private Random random = new Random();
+	private transient Random random = new Random();
 	
+	public TelemetryData(String id) {
+		this.id = id;
+	}
 	
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
 	public long getTimeStamp() {
 		return timeStamp;
 	}

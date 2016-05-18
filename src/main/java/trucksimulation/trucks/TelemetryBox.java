@@ -2,11 +2,22 @@ package trucksimulation.trucks;
 
 import trucksimulation.routing.Position;
 
+/**
+ * Represents the telemetry box which is mounted to a truck.
+ * By default, boxes do not deteriorate data, unless explicitly set with {@link #setDeteriorate(boolean)}.
+ *
+ */
 public class TelemetryBox {
 	
+	private String id;
 	private TelemetryData prevData;
 	private TelemetryData curData;
-	
+	private boolean deteriorate;
+
+	public TelemetryBox(String id) {
+		this.id = id;
+	}
+
 	public TelemetryData getTelemetryData() {
 		return curData;		
 	}
@@ -18,7 +29,7 @@ public class TelemetryBox {
 	 */
 	public TelemetryData update(Position pos, long timestamp) {
 		prevData = curData;
-		curData = new TelemetryData();
+		curData = new TelemetryData(id);
 		curData.setTimeStamp(timestamp);
 		curData.setPosition(pos);
 		curData.setSpeed(getSpeed());
@@ -43,6 +54,18 @@ public class TelemetryBox {
 		} else {
 			return 0;
 		}
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	public boolean isDeteriorating() {
+		return deteriorate;
+	}
+
+	public void setDeteriorate(boolean deteriorate) {
+		this.deteriorate = deteriorate;
 	}
 	
 	

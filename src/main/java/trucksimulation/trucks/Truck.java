@@ -20,8 +20,8 @@ public class Truck {
 	private String id;
 	private Route route;
 	private String routeId;
-	private TelemetryBox telemetryBox = new TelemetryBox();
-	private TelemetryData data;
+	private TelemetryBox telemetryBox;
+	private TelemetryBox telemetryBoxInexact;
 	private List<TrafficIncident> incidents = new ArrayList<>();
 	/** points to the current traffic incident if the truck is affected by one. null otherwise. */
 	private TrafficIncident curIncident = null;
@@ -40,6 +40,9 @@ public class Truck {
 	
 	public Truck(String id) {
 		this.id = id;
+		telemetryBox = new TelemetryBox(id);
+		telemetryBoxInexact = new TelemetryBox(id);
+		telemetryBoxInexact.setDeteriorate(true);
 	}
 	
 	public static Truck buildTruck() {
@@ -60,7 +63,8 @@ public class Truck {
 			move(e.getExceededBy());
 		}
 		ts += interval * 1000;
-		data = telemetryBox.update(pos, ts);
+		telemetryBox.update(pos, ts);
+		telemetryBoxInexact.update(pos, ts);
 		updateTrafficMode();
 	}
 	
@@ -115,12 +119,7 @@ public class Truck {
 		this.pos = route.getStart();
 		this.proceedToNextPoint();
 	}
-	public TelemetryData getData() {
-		return data;
-	}
-	public void setData(TelemetryData data) {
-		this.data = data;
-	}
+
 	public double getSpeed() {
 		return speed;
 	}
@@ -158,22 +157,17 @@ public class Truck {
 
 	public static void setNextTruckId(long nextTruckId) {
 		Truck.nextTruckId = nextTruckId;
+	}	
+
+	public TelemetryBox getTelemetryBoxInexact() {
+		return telemetryBoxInexact;
 	}
 
-	public JsonObject getJsonData() {
-		JsonObject msg = new JsonObject();
-		msg.put("position", data.getPosition().asGeoJsonFeature());
-		msg.put("speed", data.getSpeed());
-		msg.put("ts", data.getTimeStamp());
-		msg.put("horizontalAccuracy", data.getHorizontalAccuracy());
-		msg.put("truckId", id);
-		msg.put("bearing", data.getBearing());
-		return msg;
+	public TelemetryBox getTelemetryBox() {
+		return telemetryBox;
 	}
-	
-	
 
-	 /**
+	/**
 	 * Detects if the truck is entering or leaving a traffic incident.
 	 * Uses a simple check for the current distance to the traffic incidents start and end point.
 	 * It is assumed that only traffic incidents have been assigned to the truck that are actually

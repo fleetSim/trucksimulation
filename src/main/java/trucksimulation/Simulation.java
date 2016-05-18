@@ -7,14 +7,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.gson.Gson;
+
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import trucksimulation.routing.Route;
 import trucksimulation.traffic.TrafficIncident;
 import trucksimulation.trucks.DestinationArrivedException;
+import trucksimulation.trucks.TelemetryData;
 import trucksimulation.trucks.Truck;
 
 /**
@@ -28,9 +32,7 @@ public class Simulation {
 	private Vertx vertx;
 	private Map<String, HashSet<Truck>> route2trucksMap = new HashMap<>();
 	private List<Truck> trucks = new ArrayList<>();
-	
 	private List<Long> timerIds = new ArrayList<>();
-	
 	private int truckCount;
 	private int incidentCount;
 	private Future<Boolean> allRoutesLoaded = Future.future();
@@ -39,6 +41,13 @@ public class Simulation {
 	 * interval in which the trucks' positions should be updated in the simulation.
 	 */
 	private long intervalMs = 1000;
+	/**
+	 * Interval in which messages should be published by the box.
+	 * Box data will be sent every {@link #publishInterval} * {@link #intervalMs} ms.
+	 */
+	private int publishInterval = 5;
+
+	private int intervalCounter;
 	
 	public Simulation(String simulationId) {
 		this.id = simulationId;
@@ -75,24 +84,43 @@ public class Simulation {
 	/**
 	 * Sets a periodic timer which moves the truck in each interval.
 	 * 
-	 * @param t truck to be moved
+	 * @param truck truck to be moved
 	 * @return id of the timer, so that it can be cancelled
 	 */
-	private long startMoving(Truck t) {
+	private long startMoving(Truck truck) {
 		long tId = vertx.setPeriodic(intervalMs, timerId -> {
 			try {
-				t.move();
-				vertx.eventBus().publish("trucks", t.getJsonData());
+				truck.move();
+				publishBoxData(truck);
 			} catch(DestinationArrivedException ex) {
-				LOGGER.info("Truck has arrived at destination: #" + t.getId());
+				LOGGER.info("Truck has arrived at destination: #" + truck.getId());
 				vertx.cancelTimer(timerId);
 				this.timerIds.remove(timerId);
 			} catch (Exception ex) {
-				LOGGER.error("Unexpected error, stopping truck #" + t.getId(), ex);
+				LOGGER.error("Unexpected error, stopping truck #" + truck.getId(), ex);
 				vertx.cancelTimer(timerId);
 			}
 		});
 		return tId;
+	}
+	
+	/**
+	 * Publishes the correct simulation data when called and deteriorated data
+	 * every {@link #publishInterval} calls.
+	 * @param truck
+	 */
+	private void publishBoxData(Truck truck) {
+		TelemetryData correctData = truck.getTelemetryBox().getTelemetryData();
+		Gson gson = Serializer.get();
+		JsonObject correctDataJson = new JsonObject(gson.toJson(correctData));
+		vertx.eventBus().publish("trucks.real", correctDataJson);
+		
+		if(intervalCounter % publishInterval == 0) {
+			intervalCounter = 0;
+			TelemetryData inexactData = truck.getTelemetryBoxInexact().getTelemetryData();
+			JsonObject dataJson = new JsonObject(gson.toJson(inexactData));
+			vertx.eventBus().publish("trucks", dataJson);
+		}
 	}
 	
 	public void stop() {
