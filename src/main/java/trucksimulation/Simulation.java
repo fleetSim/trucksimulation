@@ -110,6 +110,7 @@ public class Simulation {
 		vertx.cancelTimer(timerId);
 		this.timerIds.remove(timerId);
 		if(!isRunning()) {
+			LOGGER.info("Simulation " + this.id + " has ended, all trucks arrived");
 			vertx.eventBus().publish("simulation.ended", new JsonObject().put("id", this.id));
 		}
 	}
