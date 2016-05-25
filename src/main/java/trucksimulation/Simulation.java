@@ -5,10 +5,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.google.gson.Gson;
 
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.IncompatibleDataDecoderException;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -34,6 +36,7 @@ public class Simulation {
 	private List<Truck> trucks = new ArrayList<>();
 	private List<Long> timerIds = new ArrayList<>();
 	private Map<String, Integer> intervalCounters = new HashMap<>();
+	private Map<TrafficIncident, List<String>> incident2RoutesMap = new HashMap<>();
 	private int truckCount;
 	private int incidentCount;
 	private Future<Boolean> allRoutesLoaded = Future.future();
@@ -94,14 +97,21 @@ public class Simulation {
 				publishBoxData(truck);
 			} catch(DestinationArrivedException ex) {
 				LOGGER.info("Truck has arrived at destination: #" + truck.getId());
-				vertx.cancelTimer(timerId);
-				this.timerIds.remove(timerId);
+				cancelTimer(timerId);
 			} catch (Exception ex) {
 				LOGGER.error("Unexpected error, stopping truck #" + truck.getId(), ex);
-				vertx.cancelTimer(timerId);
+				cancelTimer(timerId);
 			}
 		});
 		return tId;
+	}
+	
+	private void cancelTimer(long timerId) {
+		vertx.cancelTimer(timerId);
+		this.timerIds.remove(timerId);
+		if(!isRunning()) {
+			vertx.eventBus().publish("simulation.ended", new JsonObject().put("id", this.id));
+		}
 	}
 	
 	/**
@@ -149,34 +159,46 @@ public class Simulation {
 	}
 	
 	/**
-	 * Assigns a traffic incident object to all trucks which drive on one of the specified routes.
+	 * <p>Assigns a traffic incident object to all trucks which drive on one of the specified routes.
 	 * The caller must make sure that the mapping from incident to route is correct as no
-	 * additional checks are performed in the simulation object.
+	 * additional checks are performed in the simulation object.</p>
 	 * 
-	 * Operation is performed as soon as all routes have been assigned to the simulation trucks.
+	 * <p>An assingment to all affected trucks cannot be performed immediately, hence we store 
+	 * the incident to routes mapping in the {@link #incident2RoutesMap}.
+	 * When all routes have been added, and all incidents have been stored in the map then we can perform
+	 * the actual assignment for incidents to trucks.</p>
 	 * 
 	 * @see #getAllRoutesLoaded()
 	 * @see #addRoute(String, Route)
 	 * 
 	 * @param incident
-	 * @param truckIds ids of all trucks which are affected by the traffic incident
+	 * @param routeIds ids of all routes which are affected by the traffic incident
 	 */
 	public void addTrafficIncident(TrafficIncident incident, List<String> routeIds) {
-		allRoutesLoaded.setHandler(h -> {
-			for(String routeId : routeIds) {
-				Set<Truck> trucks = route2trucksMap.get(routeId);
-				if(trucks != null) {
-					trucks.forEach(t -> t.addTrafficIncident(incident));
-				} else {
-					throw new IllegalArgumentException("No trucks with route id " + routeId + " could be found in simulation " + id);
+		this.incident2RoutesMap.put(incident, routeIds);
+		incidentCount--;
+		
+		// perform the actual assingment when the last incident has been assigned (incodentCount)
+		// and all routes are loaded (alLRoutesLoaded)
+		if(incidentCount == 0) {
+			allRoutesLoaded.setHandler(h -> {
+				for(Entry<TrafficIncident, List<String>> entry : incident2RoutesMap.entrySet()) {
+					List<String> routeIDs = entry.getValue();
+					TrafficIncident in = entry.getKey();
+					
+					for(String routeId : routeIDs) {
+						Set<Truck> trucks = route2trucksMap.get(routeId);
+						if(trucks != null) {
+							trucks.forEach(t -> t.addTrafficIncident(in));
+						} else {
+							throw new IllegalArgumentException("No trucks with route id " + routeId + " could be found in simulation " + id);
+						}
+					}				
 				}
-			}
-			incidentCount--;
-			if(incidentCount == 0) {
 				LOGGER.info("Assignment of traffic incidents completed in simulation " + id);
 				allIncidentsAssigned.complete();
-			}
-		});
+			});
+		}
 	}
 
 	public String getId() {
@@ -210,6 +232,8 @@ public class Simulation {
 					allRoutesLoaded.complete();
 				}
 			});
+		} else {
+			LOGGER.warn("Attempted to add route, but simulation has no trucks.");
 		}
 	}
 

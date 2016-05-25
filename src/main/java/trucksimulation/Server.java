@@ -32,8 +32,8 @@ public class Server extends AbstractVerticle {
 	}
 	
 	private void setUpRoutes(Router router) {
-		router.get("/api/v1/simulations/routes/:routeId").handler(this::getRoute);
-		router.get("/api/v1/simulations/routes").handler(this::getRoutes);
+		router.get("/api/v1/simulations/:simId/routes/:routeId").handler(this::getRoute);
+		router.get("/api/v1/simulations/:simId/routes").handler(this::getRoutes);
 		router.get("/api/v1/simulations/:simId/trucks/:truckId").handler(this::getTruck);
 		router.get("/api/v1/simulations/:simId/trucks").handler(this::getTrucks);
 		router.get("/api/v1/simulations/:simId/traffic").handler(this::getTraffic);
@@ -137,7 +137,7 @@ public class Server extends AbstractVerticle {
 	}
 	
 	private void getRoutes(RoutingContext ctx) {
-		JsonObject query = new JsonObject();
+		JsonObject query = new JsonObject().put("simulation", ctx.request().getParam("simId"));
 		FindOptions options = new FindOptions();
 		options.setFields(new JsonObject().put("segments", false));
 		mongo.findWithOptions("routes", query, options, res -> {
@@ -150,7 +150,9 @@ public class Server extends AbstractVerticle {
 	}
 	
 	private void getRoute(RoutingContext ctx) {
-		JsonObject query = new JsonObject().put("_id", ctx.request().getParam("routeId"));
+		JsonObject query = new JsonObject() //
+				.put("_id", ctx.request().getParam("routeId")) //
+				.put("simulation", ctx.request().getParam("simId"));
 		mongo.findOne("routes", query, new JsonObject(), res -> {
 			if(res.failed()) {
 				ctx.fail(res.cause());
