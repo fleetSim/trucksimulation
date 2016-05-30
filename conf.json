@@ -2,7 +2,7 @@
 	"simulation": {
 		"osmFile": "osm/germany-latest.osm.pbf",
 		"msgInterval": 3,
-		"receiverUrl": "",
+		"receiverUrl": "http://localhost:9000/api/v1/fleet-telematics",
 		"interval_ms": 1000
 	},
 	"mongodb": {
