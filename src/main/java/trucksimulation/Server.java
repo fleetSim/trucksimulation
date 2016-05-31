@@ -62,7 +62,12 @@ public class Server extends AbstractVerticle {
 			if(res.failed()) {
 				ctx.fail(res.cause());
 			} else {
-				JsonResponse.build(ctx).end(res.result().toString());
+				vertx.eventBus().send("simulation.status", res.result().getString("_id"), reply -> {
+					JsonObject simulation = res.result();
+					Boolean isRunning = (Boolean) reply.result().body();
+					simulation.put("isRunning", isRunning);
+					JsonResponse.build(ctx).end(simulation.toString());
+				});
 			}
 		});
 	}

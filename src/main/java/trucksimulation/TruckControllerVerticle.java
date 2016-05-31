@@ -46,6 +46,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		
 		vertx.eventBus().consumer("simulation.start", this::startSimulation);
 		vertx.eventBus().consumer("simulation.stop", this::stopSimulation);
+		vertx.eventBus().consumer("simulation.status", this::getSimulationStatus);
 		vertx.eventBus().consumer("simulation.ended", this::handleSimulationEnded);
 	}	
 	
@@ -101,6 +102,11 @@ public class TruckControllerVerticle extends AbstractVerticle {
 			simulations.remove(simId);
 			setRunningStatus(simId, false);
 		}
+	}
+	
+	private void getSimulationStatus(Message<String> msg) {
+		String simId = msg.body();
+		msg.reply(isSimulationRunning(simId));
 	}
 	
 	private void handleSimulationEnded(Message<JsonObject> msg) {
