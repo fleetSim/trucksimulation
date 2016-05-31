@@ -29,7 +29,7 @@ public class TelemetryBox {
 	 */
 	public TelemetryData update(Position pos, long timestamp) {
 		prevData = curData;
-		curData = new TelemetryData(id);
+		curData = new TelemetryData(id, deteriorate);
 		curData.setTimeStamp(timestamp);
 		curData.setPosition(pos);
 		curData.setSpeed(getSpeed());

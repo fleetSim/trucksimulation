@@ -16,9 +16,11 @@ public class TelemetryData {
 	private double bearing;
 	private double temperature = 20.0;
 	private transient Random random = new Random();
+	private transient boolean deteriorate;
 	
-	public TelemetryData(String id) {
+	public TelemetryData(String id, boolean deteriorate) {
 		this.id = id;
+		this.deteriorate = deteriorate;
 	}
 	
 	public String getId() {
@@ -51,7 +53,12 @@ public class TelemetryData {
 		return position;
 	}
 	public void setPosition(Position position) {
-		this.position = deteriorate(position);
+		if(deteriorate) {
+			this.position = deteriorate(position);
+		} else {
+			this.position = position;
+		}
+		
 	}
 	
 	private Position deteriorate(Position pos) {
