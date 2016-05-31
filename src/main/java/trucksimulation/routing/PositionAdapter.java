@@ -22,20 +22,13 @@ public class PositionAdapter implements JsonSerializer<Position>, JsonDeserializ
 
 	@Override
 	public JsonElement serialize(Position src, Type typeOfSrc, JsonSerializationContext context) {
-		JsonObject feature = new JsonObject();
 		JsonObject geometry = new JsonObject();
-		
 		JsonArray coordinates = new JsonArray();
 		coordinates.add(src.getLon());
 		coordinates.add(src.getLat());
-		
 		geometry.addProperty("type", "Point");
 		geometry.add("coordinates", coordinates);
-		
-		feature.addProperty("type", "Feature");
-		feature.add("geometry",  geometry);
-		
-		return feature;
+		return geometry;
 	}
 
 	/**
