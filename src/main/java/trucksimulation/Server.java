@@ -1,5 +1,7 @@
 package trucksimulation;
 
+import com.google.gson.Gson;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.FindOptions;
@@ -10,6 +12,8 @@ import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
+import trucksimulation.traffic.TrafficIncident;
+import trucksimulation.traffic.TrafficModel;
 
 public class Server extends AbstractVerticle {
 	
@@ -38,6 +42,7 @@ public class Server extends AbstractVerticle {
 		router.get("/api/v1/simulations/:simId/routes").handler(this::getRoutes);
 		router.get("/api/v1/simulations/:simId/trucks/:truckId").handler(this::getTruck);
 		router.get("/api/v1/simulations/:simId/trucks").handler(this::getTrucks);
+		router.get("/api/v1/simulations/:simId/trafficservice").handler(this::getTrafficModels);
 		router.get("/api/v1/simulations/:simId/traffic").handler(this::getTraffic);
 		router.post("/api/v1/simulations/:simId/traffic").handler(this::createTraffic);
 		router.post("/api/v1/simulations/:simId/start").handler(this::startSimulation);
@@ -124,6 +129,24 @@ public class Server extends AbstractVerticle {
 		});
 	}
 	
+	private void getTrafficModels(RoutingContext ctx) {
+		JsonObject query = new JsonObject().put("simulation", ctx.request().getParam("simId"));
+		mongo.find("traffic", query, res -> {
+			if(res.failed()) {
+				ctx.fail(res.cause());
+			} else {
+				Gson gson = Serializer.get();
+				TrafficModel[] reports = new TrafficModel[res.result().size()];
+				for(int i = 0; i < reports.length; i++) {
+					TrafficIncident incident = gson.fromJson(res.result().get(i).toString(), TrafficIncident.class);
+					TrafficModel m = new TrafficModel(incident);
+					reports[i] = m;
+				}
+				JsonResponse.build(ctx).end(gson.toJson(reports));
+			}
+		});
+	}
+
 	/**
 	 * Inserts a new traffic document and returns the created document.
 	 * @param ctx

@@ -35,6 +35,6 @@ public class TrafficIncident {
 	}
 	
 	public String toString() {
-		return String.format("Traffic from %s to %s with speed %n", start, end, speed);
+		return String.format("Traffic from %s to %s with speed %f", start, end, speed);
 	}
 }
