@@ -33,4 +33,8 @@ public class TrafficIncident {
 	public void setSpeed(double speed) {
 		this.speed = speed;
 	}
+	
+	public String toString() {
+		return String.format("Traffic from %s to %s with speed %n", start, end, speed);
+	}
 }

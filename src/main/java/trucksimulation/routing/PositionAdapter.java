@@ -2,6 +2,7 @@ package trucksimulation.routing;
 
 import java.lang.reflect.Type;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -10,6 +11,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+
+import trucksimulation.Serializer;
 
 /**
  * Serializes a position to a geojson feature.
@@ -45,9 +48,13 @@ public class PositionAdapter implements JsonSerializer<Position>, JsonDeserializ
 		JsonArray coordinates;
 		if(jsonObj.has("geometry")) {
 			coordinates = jsonObj.getAsJsonObject("geometry").getAsJsonArray("coordinates");
-		} else {
+		} else if(jsonObj.has("coordinates")) {
 			coordinates = jsonObj.getAsJsonArray("coordinates");
-		}		 
+		} else {
+			// fallback to default deserialization
+			Gson gson = new Gson();
+			return gson.fromJson(json, Position.class);
+		}
 		double lon = coordinates.get(0).getAsDouble();
 		double lat = coordinates.get(1).getAsDouble();
 		Position pos = new Position(lat, lon);

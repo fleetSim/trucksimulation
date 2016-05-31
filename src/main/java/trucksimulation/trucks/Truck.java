@@ -9,6 +9,8 @@ import com.graphhopper.util.PointList;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
 import trucksimulation.routing.RouteSegment;
@@ -37,6 +39,7 @@ public class Truck {
 	
 	private static List<Truck> trucks = new ArrayList<>();
 	private static long nextTruckId = 100;
+	private static final Logger LOGGER = LoggerFactory.getLogger(Truck.class);
 	
 	public Truck(String id) {
 		this.id = id;
@@ -192,10 +195,12 @@ public class Truck {
 		}
 		this.speed = incident.getSpeed();
 		curIncident = incident;
+		LOGGER.info("Truck " + this.getId() + " has entered traffic " + curIncident);
 	}
 	
 	private void leaveTraffic(TrafficIncident incident) {
 		this.speed = route.getSegment(curRouteSegment).getSpeed();
+		LOGGER.info("Truck " + this.getId() + " has left traffic " + curIncident);
 		curIncident = null;
 	}
 
