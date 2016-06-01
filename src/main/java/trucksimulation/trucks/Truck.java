@@ -1,5 +1,7 @@
 package trucksimulation.trucks;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -15,6 +17,7 @@ import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
 import trucksimulation.routing.RouteSegment;
 import trucksimulation.routing.TargetExceededException;
+import trucksimulation.traffic.LocalDateTimeAdapter;
 import trucksimulation.traffic.TrafficIncident;
 
 public class Truck {
@@ -41,11 +44,18 @@ public class Truck {
 	private static long nextTruckId = 100;
 	private static final Logger LOGGER = LoggerFactory.getLogger(Truck.class);
 	
+	/**
+	 * Automatically assigns the initial timestamp to the current time in UTC.
+	 * With each move, the time will be incremented by the interval (real time cannot be used, as simulation may be sped up)
+	 * 
+	 * @param id
+	 */
 	public Truck(String id) {
 		this.id = id;
 		telemetryBox = new TelemetryBox(id);
 		telemetryBoxInexact = new TelemetryBox(id);
 		telemetryBoxInexact.setDeteriorate(true);
+		ts = LocalDateTime.now(ZoneOffset.UTC).toEpochSecond(ZoneOffset.UTC) * 1000;
 	}
 	
 	public static Truck buildTruck() {

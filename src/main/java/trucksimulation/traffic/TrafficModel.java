@@ -1,6 +1,7 @@
 package trucksimulation.traffic;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import trucksimulation.routing.Position;
 
@@ -30,9 +31,9 @@ public class TrafficModel {
 		this.startPoint = incident.getStart();
 		this.endPoint = incident.getEnd();
 		this.speed = incident.getSpeed();
-		this.lastModified = LocalDateTime.now();
-		this.startTime = LocalDateTime.now();
-		this.endTime = LocalDateTime.now();
+		this.lastModified = LocalDateTime.now(ZoneOffset.UTC);
+		this.startTime = LocalDateTime.now(ZoneOffset.UTC);
+		this.endTime = LocalDateTime.now(ZoneOffset.UTC);
 	}
 	
 	public long getIncidentId() {
