@@ -100,9 +100,42 @@ public class BootstrapVerticle extends AbstractVerticle {
 		Position hamburg = new Position(53.551085, 9.993682);
 		Position munich = new Position(48.135125, 11.581981);
 		
-		createSimulationData(berlin, factoryStuttgart, "demo");
-		createSimulationData(hamburg, factoryStuttgart, "demo");
-		createSimulationData(munich, factoryStuttgart, "demo");
+		mongo.insert("simulations", new JsonObject().put("_id", "demo").put("description", "large demo simulation"), sim -> {
+			createSimulationData(berlin, factoryStuttgart, "demo");
+			createSimulationData(hamburg, factoryStuttgart, "demo");
+			createSimulationData(munich, factoryStuttgart, "demo");
+		});
+		
+		createRandomSimulationData("demoBig");
+	}
+	
+	private void createRandomSimulationData(String simId) {
+		JsonObject sample = new JsonObject().put("$sample", new JsonObject().put("size", 100));
+		JsonObject aggregate = new JsonObject();
+		aggregate.put("aggregate", "cities").put("pipeline", new JsonArray().add(sample));
+		
+		mongo.insert("simulations", new JsonObject().put("_id", simId).put("description", "large demo simulation"), sim -> {
+			
+		});
+		mongo.runCommand("aggregate", aggregate, res -> {
+			if(res.failed()) {
+				System.out.println(res.cause());
+			} else {
+				JsonArray cities = res.result().getJsonArray("result");
+				for(int i = 0; i + 1 < cities.size(); i += 2) {
+					System.out.println("iiiiiii " + i);
+					JsonArray startPos = ((JsonObject) cities.getJsonObject(i)).getJsonObject("pos").getJsonArray("coordinates");
+					JsonArray destPos = ((JsonObject) cities.getJsonObject(i+1)).getJsonObject("pos").getJsonArray("coordinates");
+					Position start = new Position(startPos.getDouble(1), startPos.getDouble(0));
+					Position dest = new Position(destPos.getDouble(1), destPos.getDouble(0));
+					createSimulationData(start, dest, simId);
+				}
+			}
+			
+		});
+		// get random start
+		// get random destination with minimum distance
+		
 	}
 	
 	/**
@@ -112,10 +145,6 @@ public class BootstrapVerticle extends AbstractVerticle {
 		String to = gson.toJson(dest);
 		String from = gson.toJson(start);
 		JsonObject msg = new JsonObject().put("from", new JsonObject(from)).put("to", new JsonObject(to));
-		
-		mongo.insert("simulations", new JsonObject().put("_id", "demo").put("description", "demo simulation"), sim -> {
-			
-		});
 		
 		// calculate routes
 		vertx.eventBus().send("routes.calculate", msg, (AsyncResult<Message<String>> rpl) -> {
@@ -157,7 +186,7 @@ public class BootstrapVerticle extends AbstractVerticle {
 		
 		for(Object geo : geometries) {
 			JsonObject geometry = (JsonObject) geo;
-			if(geometry.getDouble("distance") > 800 && incidents.size() < max) {
+			if(geometry.getDouble("distance") > 8000 && incidents.size() < max) {
 				JsonArray coordinates = geometry.getJsonArray("coordinates");
 				startCoord = coordinates.getJsonArray(0);
 				endCoord = coordinates.getJsonArray(coordinates.size() - 1);

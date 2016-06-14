@@ -36,10 +36,10 @@ public class Bootstrapper {
 	}
 
 	private static void bootstrapCities(JsonObject conf) throws IOException, InterruptedException {
-		String cmd = String.format("mongoimport -d %s --collection cities fixtures/DE/citiesde.json", conf.getJsonObject("mongodb").getString("db_name"));
+		String cmd = String.format("mongoimport -d %s --collection cities --drop fixtures/DE/citiesde.json", conf.getJsonObject("mongodb").getString("db_name"));
 		System.out.println("Running import command " + cmd);
 		Process c = Runtime.getRuntime().exec(cmd);
-		c.waitFor();
+		
 		BufferedReader reader = new BufferedReader(new InputStreamReader(c.getInputStream()));
 		String line = "";
 		while ((line = reader.readLine())!= null) {

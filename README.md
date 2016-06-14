@@ -16,6 +16,11 @@ in the traffic collection contains a geometry and a speed attribute. When a truc
 enters a traffic incident, its speed is lowered to the value specified in the traffic
 incident document.
 
+## Requirements
+
+- MongoDB >= 3.2
+- Java 8
+- maven >= 3.3
 
 ## Sample Data
 Initially you can run `mvn compile exec:java@bootstrap` to load a demo simulation
