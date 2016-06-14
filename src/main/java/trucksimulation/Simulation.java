@@ -31,6 +31,7 @@ public class Simulation {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TruckControllerVerticle.class);
 	
 	private String id;
+	private boolean endlessMode = false;
 	private Vertx vertx;
 	private Map<String, HashSet<Truck>> route2trucksMap = new HashMap<>();
 	private List<Truck> trucks = new ArrayList<>();
@@ -97,7 +98,13 @@ public class Simulation {
 				publishBoxData(truck);
 			} catch(DestinationArrivedException ex) {
 				LOGGER.info("Truck has arrived at destination: #" + truck.getId());
-				cancelTimer(timerId);
+				if(endlessMode) {
+					// resets the truck so that it drives the same route again
+					// TODO: truck should drive back, not beam to different position
+					truck.setRoute(truck.getRoute());
+				} else {
+					cancelTimer(timerId);
+				}
 			} catch (Exception ex) {
 				LOGGER.error("Unexpected error, stopping truck #" + truck.getId(), ex);
 				cancelTimer(timerId);
@@ -288,6 +295,14 @@ public class Simulation {
 
 	public List<Truck> getTrucks() {
 		return trucks;
+	}
+
+	public boolean isEndlessMode() {
+		return endlessMode;
+	}
+
+	public void setEndlessMode(boolean endlessMode) {
+		this.endlessMode = endlessMode;
 	}
 
 }

@@ -123,7 +123,6 @@ public class BootstrapVerticle extends AbstractVerticle {
 			} else {
 				JsonArray cities = res.result().getJsonArray("result");
 				for(int i = 0; i + 1 < cities.size(); i += 2) {
-					System.out.println("iiiiiii " + i);
 					JsonArray startPos = ((JsonObject) cities.getJsonObject(i)).getJsonObject("pos").getJsonArray("coordinates");
 					JsonArray destPos = ((JsonObject) cities.getJsonObject(i+1)).getJsonObject("pos").getJsonArray("coordinates");
 					Position start = new Position(startPos.getDouble(1), startPos.getDouble(0));
@@ -186,7 +185,7 @@ public class BootstrapVerticle extends AbstractVerticle {
 		
 		for(Object geo : geometries) {
 			JsonObject geometry = (JsonObject) geo;
-			if(geometry.getDouble("distance") > 8000 && incidents.size() < max) {
+			if(geometry.getDouble("distance") > 1000 && incidents.size() < max) {
 				JsonArray coordinates = geometry.getJsonArray("coordinates");
 				startCoord = coordinates.getJsonArray(0);
 				endCoord = coordinates.getJsonArray(coordinates.size() - 1);

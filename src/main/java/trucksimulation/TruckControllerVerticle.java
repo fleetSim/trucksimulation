@@ -66,6 +66,7 @@ public class TruckControllerVerticle extends AbstractVerticle {
 		Simulation simulation = new Simulation(simId, vertx);
 		simulation.setIntervalMs(intervalMS);
 		simulation.setPublishInterval(msgInterval);
+		simulation.setEndlessMode(true);
 		simulations.put(simId, simulation);
 		
 		JsonObject trucksQuery = new JsonObject().put("simulation", simId);

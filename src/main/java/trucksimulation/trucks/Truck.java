@@ -123,9 +123,16 @@ public class Truck {
 	public Route getRoute() {
 		return route;
 	}
+	
+	/**
+	 * Assigns a route to the truck and positions the truck at the start of the route.
+	 * @param route
+	 */
 	public void setRoute(Route route) {
 		this.route = route;
 		this.pos = route.getStart();
+		curRouteSegment = 0;
+		curSegmentPoint = 0;
 		this.proceedToNextPoint();
 	}
 
