@@ -8,7 +8,7 @@
 	<properties>
 		<vertx.version>3.2.1</vertx.version>
 		<main.verticle>trucksimulation.StarterVerticle</main.verticle>
-		<bootstrap.verticle>trucksimulation.BootstrapVerticle</bootstrap.verticle>
+		<bootstrap.verticle>demo.BootstrapVerticle</bootstrap.verticle>
 	</properties>
 	<dependencies>
 		<dependency>

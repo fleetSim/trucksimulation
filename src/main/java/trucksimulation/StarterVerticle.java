@@ -22,7 +22,7 @@ public class StarterVerticle extends AbstractVerticle {
 			}
 			vertx.deployVerticle(new TruckControllerVerticle(), deplOptions, e -> {
 				if (e.failed()) {
-					LOGGER.error("Deployment of TruckCOntroller failed." + e.cause());
+					LOGGER.error("Deployment of TruckController failed." + e.cause());
 				}
 			});
 		});

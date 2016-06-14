@@ -1,7 +1,0 @@
-name
-asciiname
-lat
-lon
-code
-tz
-modified
