@@ -54,6 +54,7 @@
 					<configuration>
 						<source>1.8</source>
 						<target>1.8</target>
+						<maxmem>768</maxmem>
 					</configuration>
 				</plugin>
 			</plugins>
