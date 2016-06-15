@@ -38,6 +38,7 @@ public class Server extends AbstractVerticle {
 	}
 	
 	private void setUpRoutes(Router router) {
+		router.route("/api/v1/simulations/:simId").handler(this::provideSimulationContext);
 		router.get("/api/v1/simulations/:simId/routes/:routeId").handler(this::getRoute);
 		router.get("/api/v1/simulations/:simId/routes").handler(this::getRoutes);
 		router.get("/api/v1/simulations/:simId/trucks/:truckId").handler(this::getTruck);
@@ -51,6 +52,20 @@ public class Server extends AbstractVerticle {
 		router.get("/api/v1/simulations").handler(this::getSimulations);
 	}	
 	
+	private void provideSimulationContext(RoutingContext ctx) {
+		JsonObject query = new JsonObject().put("_id", ctx.request().getParam("simId"));
+		mongo.findOne("simulations", query, new JsonObject(), res -> {
+			if(res.failed()) {
+				ctx.fail(res.cause());
+			} else if(res.result() == null) {
+				JsonResponse.build(ctx).setStatusCode(404).end();
+			} else {
+				ctx.put("simulation", res.result());
+				ctx.next();
+			}
+		});
+	}
+	
 	private void getSimulations(RoutingContext ctx) {
 		mongo.find("simulations", new JsonObject(), res -> {
 			if(res.failed()) {
@@ -62,24 +77,17 @@ public class Server extends AbstractVerticle {
 	}
 	
 	private void getSimulation(RoutingContext ctx) {
-		JsonObject query = new JsonObject().put("_id", ctx.request().getParam("simId"));
-		mongo.findOne("simulations", query, new JsonObject(), res -> {
-			if(res.failed()) {
-				ctx.fail(res.cause());
-			} else {
-				vertx.eventBus().send("simulation.status", res.result().getString("_id"), reply -> {
-					JsonObject simulation = res.result();
+		JsonObject simulation = ctx.get("simulation");
+		vertx.eventBus().send("simulation.status", simulation.getString("_id"), reply -> {
 					Boolean isRunning = (Boolean) reply.result().body();
 					simulation.put("isRunning", isRunning);
 					JsonResponse.build(ctx).end(simulation.toString());
-				});
-			}
 		});
 	}
 	
 	private void startSimulation(RoutingContext ctx) {
-		JsonObject query = new JsonObject().put("_id", ctx.request().getParam("simId"));
-		vertx.eventBus().send("simulation.start", query, h -> {
+		JsonObject simulation = ctx.get("simulation");
+		vertx.eventBus().send("simulation.start", simulation, h -> {
 			if(h.succeeded()) {
 				JsonResponse.build(ctx).end(new JsonObject().put("status", "started").toString());
 			} else {
@@ -89,8 +97,8 @@ public class Server extends AbstractVerticle {
 	}
 	
 	private void stopSimulation(RoutingContext ctx) {
-		String simulationId = ctx.request().getParam("simId");
-		JsonObject query = new JsonObject().put("_id", simulationId);
+		JsonObject simulation = ctx.get("simulation");
+		JsonObject query = new JsonObject().put("_id", simulation.getString("_id"));
 		vertx.eventBus().publish("simulation.stop", query);
 		JsonResponse.build(ctx).end(new JsonObject().put("status", "stopped").toString());
 	}
@@ -112,6 +120,8 @@ public class Server extends AbstractVerticle {
 		mongo.findOne("trucks", query, new JsonObject(), res -> {
 			if(res.failed()) {
 				ctx.fail(res.cause());
+			} else if (res.result() == null){
+				JsonResponse.build(ctx).setStatusCode(404).end();
 			} else {
 				JsonResponse.build(ctx).end(res.result().toString());
 			}
@@ -186,6 +196,8 @@ public class Server extends AbstractVerticle {
 		mongo.findOne("routes", query, new JsonObject(), res -> {
 			if(res.failed()) {
 				ctx.fail(res.cause());
+			} else if (res.result() == null) {
+				JsonResponse.build(ctx).setStatusCode(404).end();
 			} else {
 				JsonResponse.build(ctx).end(res.result().toString());
 			}

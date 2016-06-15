@@ -109,6 +109,12 @@ public class BootstrapVerticle extends AbstractVerticle {
 		createRandomSimulationData("demoBig");
 	}
 	
+	/**
+	 * Retrieve a random sample of cities from mongodb and use city pairs to create routes, trucks and traffic.
+	 * Method is not indempotent and will increase the total number of trucks/routes with each call.
+	 * 
+	 * @param simId name of the simulation
+	 */
 	private void createRandomSimulationData(String simId) {
 		JsonObject sample = new JsonObject().put("$sample", new JsonObject().put("size", 100));
 		JsonObject aggregate = new JsonObject();
@@ -131,10 +137,7 @@ public class BootstrapVerticle extends AbstractVerticle {
 				}
 			}
 			
-		});
-		// get random start
-		// get random destination with minimum distance
-		
+		});		
 	}
 	
 	/**
