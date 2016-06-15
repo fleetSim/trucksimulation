@@ -25,22 +25,33 @@ public class Route {
 	private double distanceMeters;
 	private transient PathWrapper pathWrapper;
 	private transient String osmPath;
+	private transient String ghCacheLocation;
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(Route.class);
-	
-	public Route() {
 		
+	public static Route getRoute(String osmPath, Position start, Position destination) {
+		Route r = new Route(start, destination, osmPath);
+		r.init();
+		return r;
 	}
 	
-	public Route(Position start, Position goal, String osmPath) {
+	public static Route getRoute(String osmPath, String cacheDir, Position start, Position destination) {
+		Route r = new Route(start, destination, osmPath);
+		r.setGhCacheLocation(cacheDir);
+		r.init();
+		return r;
+	}
+	
+	public Route() {
+		String userHome = System.getProperty("user.home");
+		ghCacheLocation = new File(userHome, ".graphhopper").getAbsolutePath();
+	}
+	
+	private Route(Position start, Position goal, String osmPath) {
+		this();
 		this.start = start;
 		this.goal = goal;
 		this.osmPath = osmPath;
-		init();
-	}
-	
-	public Route(Position start, Position goal) {
-		this(start, goal, new File("osm", "denmark-latest.osm.pbf").getAbsolutePath());
 	}
 	
 	private void init() {
@@ -51,10 +62,8 @@ public class Route {
 	private void calcRoute() {
 		// create one GraphHopper instance
 		GraphHopper hopper = new GraphHopper().forServer();
-		
-		String userHome = System.getProperty("user.home");
 		hopper.setOSMFile(osmPath);
-		hopper.setGraphHopperLocation(new File(userHome, ".graphhopper").getAbsolutePath());
+		hopper.setGraphHopperLocation(ghCacheLocation);
 		hopper.setEncodingManager(new EncodingManager("car"));
 		hopper.importOrLoad();
 
@@ -165,6 +174,14 @@ public class Route {
 		this.start = segments[0].getPoint(0);
 		RouteSegment lastSeg = segments[segments.length-1];
 		this.goal = lastSeg.getPoint(lastSeg.getSize()-1);
+	}
+
+	public String getGhCacheLocation() {
+		return ghCacheLocation;
+	}
+
+	public void setGhCacheLocation(String ghCacheLocation) {
+		this.ghCacheLocation = ghCacheLocation;
 	}
 
 	@Override

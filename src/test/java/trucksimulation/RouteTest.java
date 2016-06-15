@@ -1,33 +1,27 @@
 package trucksimulation;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
 
 import org.junit.Test;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.graphhopper.PathWrapper;
-import com.graphhopper.util.GPXEntry;
-import com.graphhopper.util.Instruction;
-import com.graphhopper.util.InstructionList;
-import com.graphhopper.util.PointList;
-import com.graphhopper.util.shapes.GHPoint3D;
 
 import io.vertx.core.json.JsonObject;
 import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
 import trucksimulation.routing.RouteSegment;
-import trucksimulation.routing.RouteSegmentAdapter;
 
 public class RouteTest {
 
 	@Test
 	public void testDenmark() {
-		Route r = new Route(new Position(52.5192, 13.4061), new Position(51.676097, 9.568337));
+		// use different graphhopper cache directory to avoid conflicts
+		String userHome = System.getProperty("user.home");
+		String ghCacheLocation = new File(userHome, ".graphhopper-test").getAbsolutePath();
+		Route r = Route.getRoute(new File("osm", "denmark-latest.osm.pbf").toString(), ghCacheLocation,
+				new Position(55.676097, 12.568337), new Position(56.162939, 10.203921));
 		
 		Gson g = new Gson();
 		System.out.println(g.toJson(r));

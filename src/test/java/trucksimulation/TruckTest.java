@@ -1,5 +1,7 @@
 package trucksimulation;
 
+import java.io.File;
+
 import org.junit.Test;
 
 import trucksimulation.routing.Position;
@@ -11,8 +13,13 @@ public class TruckTest {
 
 	@Test
 	public void testMovement() throws InterruptedException {
+		// use different graphhopper cache directory to avoid conflicts
+		String userHome = System.getProperty("user.home");
+		String ghCacheLocation = new File(userHome, ".graphhopper-test").getAbsolutePath();
+		
 		Truck t1 = Truck.buildTruck();
-		Route r = new Route(new Position(52.926081, 9.665394), new Position(52.676097, 9.568337));
+		Route r = Route.getRoute(new File("osm", "denmark-latest.osm.pbf").toString(), ghCacheLocation,
+				new Position(54.939615, 8.864417), new Position(55.495973, 9.473052));
 		t1.setRoute(r);
 		
 		long journeyTime = 0;

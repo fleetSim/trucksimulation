@@ -3,7 +3,7 @@ jdk:
   - oraclejdk8
 before_install:
   - mkdir osm
-  - cd osm && wget http://download.geofabrik.de/europe/germany-latest.osm.pbf && cd ..
+  - cd osm && wget http://download.geofabrik.de/europe/denmark-latest.osm.pbf && cd ..
 cache:
   directories:
-  - $HOME/.graphhopper
+  - $HOME/.graphhopper-test

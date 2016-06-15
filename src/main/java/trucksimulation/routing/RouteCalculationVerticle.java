@@ -33,7 +33,7 @@ public class RouteCalculationVerticle extends AbstractVerticle {
 		Position toPos = gson.fromJson(to.toString(), Position.class);
 		
 		try {
-			Route route = new Route(fromPos, toPos, osmFile);
+			Route route = Route.getRoute(osmFile, fromPos, toPos);
 			msg.reply(gson.toJson(route));
 		} catch(Exception ex) {
 			LOGGER.error("Route could not be calculated. From " + from + " to " + to, ex);
