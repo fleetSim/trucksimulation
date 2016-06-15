@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
@@ -61,7 +62,14 @@ public class Route {
 	
 	private void calcRoute() {
 		// create one GraphHopper instance
-		GraphHopper hopper = new GraphHopper().forServer();
+		Map<String, String> env = System.getenv();
+		GraphHopper hopper;
+		if(Boolean.valueOf(env.get("LOW_MEMORY"))) {
+			LOGGER.info("Using Graphhopper for mobile due to LOW_MEMORY env.");
+			hopper = new GraphHopper().forMobile();
+		} else {
+			hopper = new GraphHopper().forServer();
+		}
 		hopper.setOSMFile(osmPath);
 		hopper.setGraphHopperLocation(ghCacheLocation);
 		hopper.setEncodingManager(new EncodingManager("car"));
