@@ -63,18 +63,18 @@ The URL must contain the protocol and may optionally contain port and path.
 The format of an http post request sent by the simulation server looks as follows:
 
 ```json
-{ timeStamp: 1465985004000,
-  truckId: '57600524c91aff1b6865e0eb',
-  altitude: 0,
-  verticalAccuracy: 20,
-  bearing: 324.08819041630136,
-  temperature: 20,
-  horizontalAccuracy: 4,
-  id: '57600524c91aff1b6865e0eb',
-  position: 
-   { type: 'Point',
-     coordinates: [ 11.51435004278778, 48.15301418564581 ] },
-  speed: 9.863748019093341 }
+{ "timeStamp": 1465985004000,
+  "truckId": "57600524c91aff1b6865e0eb",
+  "altitude": 0,
+  "verticalAccuracy": 20,
+  "bearing": 324.08819041630136,
+  "temperature": 20,
+  "horizontalAccuracy": 4,
+  "id": "57600524c91aff1b6865e0eb",
+  "position": 
+   { "type": "Point",
+     "coordinates": [ 11.51435004278778, 48.15301418564581 ] },
+  "speed": 9.863748019093341 }
 ```
 
 Speed is provided as m/s, accuracy is in meters and the timestamp is in milliseconds since unix epoch.
