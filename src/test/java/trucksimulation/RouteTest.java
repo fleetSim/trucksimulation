@@ -16,12 +16,12 @@ import trucksimulation.routing.RouteSegment;
 public class RouteTest {
 
 	@Test
-	public void testDenmark() {
+	public void testAndorra() {
 		// use different graphhopper cache directory to avoid conflicts
 		String userHome = System.getProperty("user.home");
 		String ghCacheLocation = new File(userHome, ".graphhopper-test").getAbsolutePath();
-		Route r = Route.getRoute(new File("osm", "denmark-latest.osm.pbf").toString(), ghCacheLocation,
-				new Position(55.676097, 12.568337), new Position(56.162939, 10.203921));
+		Route r = Route.getRoute(new File("osm", "andorra-latest.osm.pbf").toString(), ghCacheLocation,
+				new Position(42.450656, 1.485264), new Position(42.541762, 1.457115));
 		
 		Gson g = new Gson();
 		System.out.println(g.toJson(r));

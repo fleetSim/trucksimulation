@@ -18,8 +18,8 @@ public class TruckTest {
 		String ghCacheLocation = new File(userHome, ".graphhopper-test").getAbsolutePath();
 		
 		Truck t1 = Truck.buildTruck();
-		Route r = Route.getRoute(new File("osm", "denmark-latest.osm.pbf").toString(), ghCacheLocation,
-				new Position(54.939615, 8.864417), new Position(55.495973, 9.473052));
+		Route r = Route.getRoute(new File("osm", "andorra-latest.osm.pbf").toString(), ghCacheLocation,
+				new Position(42.450656, 1.485264), new Position(42.541762, 1.457115));
 		t1.setRoute(r);
 		
 		long journeyTime = 0;

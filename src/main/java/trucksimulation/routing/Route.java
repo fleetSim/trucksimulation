@@ -67,6 +67,7 @@ public class Route {
 		if(Boolean.valueOf(env.get("LOW_MEMORY"))) {
 			LOGGER.info("Using Graphhopper for mobile due to LOW_MEMORY env.");
 			hopper = new GraphHopper().forMobile();
+			hopper.setCHPrepareThreads(1);
 		} else {
 			hopper = new GraphHopper().forServer();
 		}
