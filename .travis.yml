@@ -1,4 +1,6 @@
 language: java
+jdk:
+  - oraclejdk8
 before_install:
   - mkdir osm
   - cd osm && wget http://download.geofabrik.de/europe/germany-latest.osm.pbf && cd ..
