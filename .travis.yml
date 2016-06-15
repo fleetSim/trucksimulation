@@ -4,6 +4,7 @@ jdk:
 before_install:
   - mkdir osm
   - cd osm && wget http://download.geofabrik.de/europe/denmark-latest.osm.pbf && cd ..
+  - export MAVEN_OPTS="-Xmx768m -XX:MaxPermSize=256m"
 cache:
   directories:
   - $HOME/.graphhopper-test

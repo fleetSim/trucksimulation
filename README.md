@@ -1,4 +1,7 @@
 # Truck Simulation
+
+[![Build Status](https://travis-ci.org/fleetSim/trucksimulation.svg?branch=master)](https://travis-ci.org/fleetSim/trucksimulation)
+
 This is a server which allows running simulations of truck fleets.
 The server simulates the movements of various trucks. It calculates routes from start to
 destination cities and lets trucks drive these routes.
