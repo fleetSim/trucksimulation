@@ -20,7 +20,7 @@ public class StarterVerticle extends AbstractVerticle {
 			if (w.failed()) {
 				LOGGER.error("Deployment of RouteManager failed." + w.cause());
 			}
-			vertx.deployVerticle(new TruckControllerVerticle(), deplOptions, e -> {
+			vertx.deployVerticle(new SimulationControllerVerticle(), deplOptions, e -> {
 				if (e.failed()) {
 					LOGGER.error("Deployment of TruckController failed." + e.cause());
 				}

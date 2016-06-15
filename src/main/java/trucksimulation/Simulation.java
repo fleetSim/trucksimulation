@@ -28,7 +28,7 @@ import trucksimulation.trucks.Truck;
  */
 public class Simulation {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(TruckControllerVerticle.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SimulationControllerVerticle.class);
 	
 	private String id;
 	private boolean endlessMode = false;

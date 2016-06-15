@@ -57,8 +57,8 @@ public class SimulationControllerVerticle extends AbstractVerticle {
 	 * @param msg
 	 */
 	private void startSimulation(Message<JsonObject> msg) {
-		JsonObject simulationQuery = msg.body();
-		String simId = simulationQuery.getString("_id");
+		JsonObject simulationJson = msg.body();
+		String simId = simulationJson.getString("_id");
 		if(isSimulationRunning(simId)) {
 			msg.fail(400, "Simulation is already running.");
 			return;
@@ -66,7 +66,7 @@ public class SimulationControllerVerticle extends AbstractVerticle {
 		Simulation simulation = new Simulation(simId, vertx);
 		simulation.setIntervalMs(intervalMS);
 		simulation.setPublishInterval(msgInterval);
-		simulation.setEndlessMode(true);
+		simulation.setEndlessMode(simulationJson.getBoolean("endless", false));
 		simulations.put(simId, simulation);
 		
 		JsonObject trucksQuery = new JsonObject().put("simulation", simId);

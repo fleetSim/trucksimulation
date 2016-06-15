@@ -21,8 +21,8 @@ public class Route {
 	private Position start;	
 	private Position goal;
 	private RouteSegment[] segments;
-	private double time;
-	private double distance;
+	private double timeMs;
+	private double distanceMeters;
 	private transient PathWrapper pathWrapper;
 	private transient String osmPath;
 	
@@ -73,8 +73,8 @@ public class Route {
 	}
 	
 	private void loadRouteFromWrapper() {
-		this.time = pathWrapper.getTime();
-		this.distance = pathWrapper.getDistance();
+		this.timeMs = pathWrapper.getTime();
+		this.distanceMeters = pathWrapper.getDistance();
 		
 		List<RouteSegment> tmpSegList = new ArrayList<>(pathWrapper.getInstructions().size());
 		for(int s = 0; s < pathWrapper.getInstructions().size(); s++) {
@@ -110,12 +110,6 @@ public class Route {
 		return segments.length;
 	}
 
-
-	public PathWrapper getPathWrapper() {
-		return pathWrapper;
-	}
-
-
 	public Position getStart() {
 		return start;
 	}
@@ -135,20 +129,24 @@ public class Route {
 		this.goal = goal;
 	}
 	
-	public double getTime() {
-		return time;
+	/**
+	 * 
+	 * @return approximate time in milliseconds that is needed to drive the route.
+	 */
+	public double getTimeMs() {
+		return timeMs;
 	}
 
-	public void setTime(double time) {
-		this.time = time;
+	public void setTimeMs(double time) {
+		this.timeMs = time;
 	}
 
-	public double getDistance() {
-		return distance;
+	public double getDistanceMeters() {
+		return distanceMeters;
 	}
 
-	public void setDistance(double distance) {
-		this.distance = distance;
+	public void setDistanceMeters(double distance) {
+		this.distanceMeters = distance;
 	}
 
 	public RouteSegment[] getSegments() {

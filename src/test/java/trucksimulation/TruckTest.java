@@ -1,13 +1,10 @@
 package trucksimulation;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Assert;
 import org.junit.Test;
 
 import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
+import trucksimulation.trucks.DestinationArrivedException;
 import trucksimulation.trucks.Truck;
 
 public class TruckTest {
@@ -15,7 +12,7 @@ public class TruckTest {
 	@Test
 	public void testMovement() throws InterruptedException {
 		Truck t1 = Truck.buildTruck();
-		Route r = new Route(new Position(55.926081, 11.665394), new Position(55.676097, 12.568337)); // Nykøbing Sjaelland to Copenhagen
+		Route r = new Route(new Position(52.926081, 9.665394), new Position(52.676097, 9.568337));
 		t1.setRoute(r);
 		
 		long journeyTime = 0;
@@ -26,13 +23,12 @@ public class TruckTest {
 				System.out.println("new pos: " + t1.getPos().toString());
 				Thread.sleep(1);
 				journeyTime++;
-			} catch (IllegalStateException ex) {
-				ex.printStackTrace();
+			} catch (DestinationArrivedException ex) {
 				break;
 			}
 		}
 		System.out.println("Journey took " + journeyTime + " seconds.");
-		System.out.println("estimated journey time was " + t1.getRoute().getTime()/1000);
+		System.out.println("estimated journey time was " + t1.getRoute().getTimeMs()/1000);
 	}
 
 }

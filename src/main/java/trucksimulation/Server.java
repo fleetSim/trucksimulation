@@ -38,7 +38,8 @@ public class Server extends AbstractVerticle {
 	}
 	
 	private void setUpRoutes(Router router) {
-		router.route("/api/v1/simulations/:simId").handler(this::provideSimulationContext);
+		// regex caputes simId
+		router.routeWithRegex("/api/v1/simulations\\/([^\\/]+)\\/(.*)").handler(this::provideSimulationContext);
 		router.get("/api/v1/simulations/:simId/routes/:routeId").handler(this::getRoute);
 		router.get("/api/v1/simulations/:simId/routes").handler(this::getRoutes);
 		router.get("/api/v1/simulations/:simId/trucks/:truckId").handler(this::getTruck);
@@ -53,7 +54,7 @@ public class Server extends AbstractVerticle {
 	}	
 	
 	private void provideSimulationContext(RoutingContext ctx) {
-		JsonObject query = new JsonObject().put("_id", ctx.request().getParam("simId"));
+		JsonObject query = new JsonObject().put("_id", ctx.request().getParam("param0"));
 		mongo.findOne("simulations", query, new JsonObject(), res -> {
 			if(res.failed()) {
 				ctx.fail(res.cause());
@@ -87,6 +88,9 @@ public class Server extends AbstractVerticle {
 	
 	private void startSimulation(RoutingContext ctx) {
 		JsonObject simulation = ctx.get("simulation");
+		if(simulation == null) {
+			throw new IllegalArgumentException("daum!");
+		}
 		vertx.eventBus().send("simulation.start", simulation, h -> {
 			if(h.succeeded()) {
 				JsonResponse.build(ctx).end(new JsonObject().put("status", "started").toString());

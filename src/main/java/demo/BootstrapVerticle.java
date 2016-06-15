@@ -15,7 +15,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
 import trucksimulation.Serializer;
-import trucksimulation.TruckControllerVerticle;
+import trucksimulation.SimulationControllerVerticle;
 import trucksimulation.routing.Position;
 import trucksimulation.routing.RouteCalculationVerticle;
 
@@ -27,7 +27,7 @@ import trucksimulation.routing.RouteCalculationVerticle;
 public class BootstrapVerticle extends AbstractVerticle {
 	
 	private MongoClient mongo;
-	private static final Logger LOGGER = LoggerFactory.getLogger(TruckControllerVerticle.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SimulationControllerVerticle.class);
 	
 	@Override
 	public void start() throws Exception {

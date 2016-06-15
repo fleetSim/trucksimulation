@@ -60,6 +60,11 @@ Run the simulation server and an adapter verticle in the same cluster to receive
 HTTP Post reuests will be sent to the `receiverUrl` specified in the configuration file.
 The URL must contain the protocol and may optionally contain port and path.
 
+The format of a post request sent by the simulation server looks as follows:
+```json
+
+```
+
 
 ### SockJS
 Events are emitted using the vert.x sockjs bridge.  
