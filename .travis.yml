@@ -1,0 +1,7 @@
+language: java
+before_install:
+  - mkdir osm
+  - cd osm && wget http://download.geofabrik.de/europe/germany-latest.osm.pbf
+cache:
+  directories:
+  - $HOME/.graphhopper
