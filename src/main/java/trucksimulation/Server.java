@@ -13,6 +13,7 @@ import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import trucksimulation.traffic.TrafficIncident;
+import trucksimulation.traffic.TrafficManager;
 import trucksimulation.traffic.TrafficModel;
 
 public class Server extends AbstractVerticle {
@@ -38,20 +39,23 @@ public class Server extends AbstractVerticle {
 	}
 	
 	private void setUpRoutes(Router router) {
+		TrafficManager trafficMgr = new TrafficManager(mongo);
+		
 		// regex caputes simId
 		router.routeWithRegex("/api/v1/simulations\\/([^\\/]+)\\/(.*)").handler(this::provideSimulationContext);
 		router.get("/api/v1/simulations/:simId/routes/:routeId").handler(this::getRoute);
 		router.get("/api/v1/simulations/:simId/routes").handler(this::getRoutes);
 		router.get("/api/v1/simulations/:simId/trucks/:truckId").handler(this::getTruck);
 		router.get("/api/v1/simulations/:simId/trucks").handler(this::getTrucks);
-		router.get("/api/v1/simulations/:simId/trafficservice").handler(this::getTrafficModels);
-		router.get("/api/v1/simulations/:simId/traffic").handler(this::getTraffic);
-		router.post("/api/v1/simulations/:simId/traffic").handler(this::createTraffic);
+		router.get("/api/v1/simulations/:simId/trafficservice").handler(trafficMgr::getTrafficModels);
+		router.get("/api/v1/simulations/:simId/traffic").handler(trafficMgr::getTraffic);
+		router.post("/api/v1/simulations/:simId/traffic").handler(trafficMgr::createTraffic);
 		router.post("/api/v1/simulations/:simId/start").handler(this::startSimulation);
 		router.post("/api/v1/simulations/:simId/stop").handler(this::stopSimulation);
 		router.get("/api/v1/simulations/:simId").handler(this::getSimulation);
 		router.get("/api/v1/simulations").handler(this::getSimulations);
 	}	
+
 	
 	private void provideSimulationContext(RoutingContext ctx) {
 		JsonObject query = new JsonObject().put("_id", ctx.request().getParam("param0"));
@@ -132,53 +136,6 @@ public class Server extends AbstractVerticle {
 		});
 	}
 	
-	private void getTraffic(RoutingContext ctx) {
-		JsonObject query = new JsonObject().put("simulation", ctx.request().getParam("simId"));
-		mongo.find("traffic", query, res -> {
-			if(res.failed()) {
-				ctx.fail(res.cause());
-			} else {
-				JsonResponse.build(ctx).end(res.result().toString());
-			}
-		});
-	}
-	
-	private void getTrafficModels(RoutingContext ctx) {
-		JsonObject query = new JsonObject().put("simulation", ctx.request().getParam("simId"));
-		mongo.find("traffic", query, res -> {
-			if(res.failed()) {
-				ctx.fail(res.cause());
-			} else {
-				Gson gson = Serializer.get();
-				TrafficModel[] reports = new TrafficModel[res.result().size()];
-				for(int i = 0; i < reports.length; i++) {
-					TrafficIncident incident = gson.fromJson(res.result().get(i).toString(), TrafficIncident.class);
-					TrafficModel m = new TrafficModel(incident);
-					reports[i] = m;
-				}
-				JsonResponse.build(ctx).end(gson.toJson(reports));
-			}
-		});
-	}
-
-	/**
-	 * Inserts a new traffic document and returns the created document.
-	 * @param ctx
-	 */
-	private void createTraffic(RoutingContext ctx) {
-		JsonObject trafficIncident = ctx.getBodyAsJson();
-		trafficIncident.put("simulation", ctx.request().getParam("simId"));
-		
-		mongo.insert("traffic", trafficIncident, res -> {
-			if(res.failed()) {
-				ctx.fail(res.cause());
-			} else {
-				String id = res.result();
-				trafficIncident.put("_id", id);
-				JsonResponse.build(ctx).setStatusCode(201).end(trafficIncident.toString());
-			}
-		});
-	}
 	
 	private void getRoutes(RoutingContext ctx) {
 		JsonObject query = new JsonObject().put("simulation", ctx.request().getParam("simId"));

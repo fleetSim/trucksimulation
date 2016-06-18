@@ -21,6 +21,7 @@ public class TrafficModel {
 	private LocalDateTime lastModified;
 	private LocalDateTime startTime;
 	private LocalDateTime endTime;
+	private double distance;
 	
 	public TrafficModel() {
 		
@@ -95,5 +96,13 @@ public class TrafficModel {
 
 	public void setEndTime(LocalDateTime endTime) {
 		this.endTime = endTime;
+	}
+
+	public double getDistance() {
+		return distance;
+	}
+
+	public void setDistance(double distance) {
+		this.distance = distance;
 	}
 }
