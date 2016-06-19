@@ -35,7 +35,7 @@ public class HttpNotificationVerticle extends AbstractVerticle {
 		int port = url.getPort();
 		String path = url.getPath();
 		
-		HttpClientOptions opts = new HttpClientOptions().setDefaultHost(host).setDefaultPort(port);
+		HttpClientOptions opts = new HttpClientOptions().setDefaultHost(host).setDefaultPort(port).setConnectTimeout(500);
 		HttpClient client = vertx.createHttpClient(opts);
 		vertx.eventBus().consumer("trucks", (Message<JsonObject> msg) -> {
 			client.post(path, response -> {
