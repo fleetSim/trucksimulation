@@ -21,6 +21,7 @@ public class TrafficModel {
 	private LocalDateTime lastModified;
 	private LocalDateTime startTime;
 	private LocalDateTime endTime;
+	private LocalDateTime reported;
 	private double distance;
 	
 	public TrafficModel() {
@@ -33,8 +34,9 @@ public class TrafficModel {
 		this.endPoint = incident.getEnd();
 		this.speed = incident.getSpeed();
 		this.lastModified = LocalDateTime.now(ZoneOffset.UTC);
-		this.startTime = LocalDateTime.now(ZoneOffset.UTC);
-		this.endTime = LocalDateTime.now(ZoneOffset.UTC);
+		this.startTime = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(10);
+		this.endTime = LocalDateTime.now(ZoneOffset.UTC).plusMinutes(60);
+		this.reported = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(10);
 	}
 	
 	public long getIncidentId() {
