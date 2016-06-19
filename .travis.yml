@@ -1,8 +1,18 @@
 language: java
 jdk:
-  - oraclejdk8
+- oraclejdk8
 env:
-  - LOW_MEMORY=true
+- LOW_MEMORY=true
 cache:
   directories:
   - $HOME/.graphhopper-test
+before_deploy:
+  - export FATJAR=$(ls target/trucksimulation-*-fat.jar)
+deploy:
+  provider: releases
+  api_key:
+    secure: YXdvrFF8gyOnhgW1YoGxAa+Sl3E1tCKrf9vvgVTJ6Vt1JtSmZM/7rPo2fFSIQg6iJzyqvkAU7l/R7JK2UqSVsZ5BNxTLXNibMJ0UNRQaiX7D3gc52SwOf1LG9OXesvulZc7Ha/7xmW0awvEkPWQOg6jcBumixEho7zOKV1AUIioDVNzbtuDpmYXDS2+QXg9NcXDXfx207gF9cVComch/MKucbSFPLUVIaAReUv+aCqxunsAQg5s7X8j9GCd14c/xxicEjrHbPZvQoDj6Sb/AOkq2J3Sol9DdeBaKBdT4AzjUtL4ZMqqD9NqnVgiJBmrSLrHDVr8gM7LCukq4X112cSrrfbc+xFx6JzTzMbX0Wa67DKaZ/4e8Y4aH/u/kQGV5oV50mdd0+3DUDte8HGaJznVcuhAoEiCNwofaNDWhgQkA0DfTBW4vsNKGRbFl/zOB8qxBPqwSUptiCeBlzzZL+No7JYLimPojdFD6xuCV86Us6qkJMDX1C/+jLK8uKmnpTxZK+7iS5hhcmwVGPVXypmOI9c+l0+bAzfzudaIGrtpI3pU7Arb/vfLo6gXfFamKRRnV6E214O4f/QESsPArVIVJkIXdAogiya69Ee4Mr5d7iwwlgQz2wZB0gJvZTimhu6iNky8+StM9AEWTwYTwpmbqzUqEVMOqcgpm65EEiRQ=
+  file: "${FATJAR}"
+  skip_cleanup: true
+  on:
+    tags: true
