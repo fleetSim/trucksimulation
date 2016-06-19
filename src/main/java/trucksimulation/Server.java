@@ -47,7 +47,7 @@ public class Server extends AbstractVerticle {
 		router.get("/api/v1/simulations/:simId/routes").handler(this::getRoutes);
 		router.get("/api/v1/simulations/:simId/trucks/:truckId").handler(this::getTruck);
 		router.get("/api/v1/simulations/:simId/trucks").handler(this::getTrucks);
-		router.get("/api/v1/simulations/:simId/trafficservice").handler(trafficMgr::getTrafficModels);
+		router.get("/api/v1/simulations/:simId/trafficservice").handler(trafficMgr::getNearByTrafficModels);
 		router.get("/api/v1/simulations/:simId/traffic").handler(trafficMgr::getTraffic);
 		router.post("/api/v1/simulations/:simId/traffic").handler(trafficMgr::createTraffic);
 		router.post("/api/v1/simulations/:simId/start").handler(this::startSimulation);

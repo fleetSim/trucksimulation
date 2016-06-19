@@ -1,7 +1,5 @@
 package trucksimulation.traffic;
 
-import java.util.List;
-
 import com.google.gson.Gson;
 
 import io.vertx.core.json.JsonArray;
@@ -36,10 +34,11 @@ public class TrafficManager {
 	 * Responds with traffic models that are closest to a given position.
 	 * The query position must be passed in as http query parameter.
 	 * 
+	 * @see TrafficQueryParams 
 	 * 
 	 * @param ctx
 	 */
-	public void getTrafficModels(RoutingContext ctx) {
+	public void getNearByTrafficModels(RoutingContext ctx) {
 		JsonObject query = new JsonObject().put("simulation", ctx.request().getParam("simId"));
 		TrafficQueryParams params;
 		
@@ -51,7 +50,12 @@ public class TrafficManager {
 			return;
 		}
 		JsonObject geoJsonPoint = new JsonObject().put("type", "Point").put("coordinates", params.getLonLatArr());
-		JsonObject geoNearCommand = new JsonObject().put("geoNear", "traffic").put("near", geoJsonPoint).put("maxDistance", params.getMaxDistance()).put("limit", 3).put("spherical", true).put("includeLocs", true);
+		JsonObject geoNearCommand = new JsonObject().put("geoNear", "traffic")
+				.put("near", geoJsonPoint) //
+				.put("maxDistance", params.getMaxDistance()) //
+				.put("limit", 3) //
+				.put("spherical", true) //
+				.put("query", query);
 		
 		mongo.runCommand("geoNear", geoNearCommand, res -> {
 			if(res.failed()) {
@@ -59,7 +63,6 @@ public class TrafficManager {
 			} else {
 				Gson gson = Serializer.get();
 				JsonArray results = res.result().getJsonArray("results");
-				//JsonResponse.build(ctx).end(results.toString());
 				TrafficModel[] reports = new TrafficModel[results.size()];
 				
 				for(int i = 0; i < reports.length; i++) {

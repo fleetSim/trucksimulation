@@ -3,6 +3,19 @@ package trucksimulation.traffic;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 
+
+/**
+ * 
+ * Parameters which can be passed in to the traffic service in the URLs query part.<br>
+ * Allowed params are:
+ * <ul>
+ * 	<li>lat (double, required)</li>
+ *  <li>lon (double, required)</li>
+ *  <li>maxDistance (int, optional, in meters)</li>
+ * </ul>
+ *
+ *
+ */
 public class TrafficQueryParams {
 	
 	private double lat;
