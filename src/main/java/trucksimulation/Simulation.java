@@ -75,7 +75,7 @@ public class Simulation {
 	 */
 	public void start() {
 		LOGGER.info("Simulation start requested for simulation " + id);
-		CompositeFuture.all(allRoutesLoaded, allIncidentsAssigned).setHandler(h -> {
+		allIncidentsAssigned.setHandler(h -> {
 			LOGGER.info("simulation initialisation completed, starting simulation.");
 			for(Truck truck : trucks) {
 				long timerId = startMoving(truck);
@@ -186,8 +186,8 @@ public class Simulation {
 		this.incident2RoutesMap.put(incident, routeIds);
 		incidentCount--;
 		
-		// perform the actual assingment when the last incident has been assigned (incodentCount)
-		// and all routes are loaded (alLRoutesLoaded)
+		// perform the actual assingment when the last incident has been assigned (incidentCount)
+		// and all routes are loaded (allRoutesLoaded)
 		if(incidentCount == 0) {
 			allRoutesLoaded.setHandler(h -> {
 				for(Entry<TrafficIncident, List<String>> entry : incident2RoutesMap.entrySet()) {
