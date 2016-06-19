@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.is_gr8</groupId>
 	<artifactId>trucksimulation</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0</version>
 	<name>Truck Simulation</name>
 	<properties>
 		<vertx.version>3.2.1</vertx.version>
