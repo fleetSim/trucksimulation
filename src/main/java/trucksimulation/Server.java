@@ -1,7 +1,5 @@
 package trucksimulation;
 
-import com.google.gson.Gson;
-
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.FindOptions;
@@ -12,9 +10,7 @@ import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
-import trucksimulation.traffic.TrafficIncident;
 import trucksimulation.traffic.TrafficManager;
-import trucksimulation.traffic.TrafficModel;
 
 public class Server extends AbstractVerticle {
 	

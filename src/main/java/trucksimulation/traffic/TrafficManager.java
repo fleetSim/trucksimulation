@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.RoutingContext;
 import trucksimulation.JsonResponse;
@@ -11,8 +13,8 @@ import trucksimulation.Serializer;
 
 public class TrafficManager {
 	
-	
 	private MongoClient mongo;
+	private static final Logger LOGGER = LoggerFactory.getLogger(TrafficManager.class);
 
 	public TrafficManager(MongoClient mongo) {
 		this.mongo = mongo;
