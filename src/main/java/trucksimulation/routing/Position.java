@@ -1,8 +1,5 @@
 package trucksimulation.routing;
 
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-
 public class Position {
 
 	private static final int EARTH_RADIUS = 6378137;

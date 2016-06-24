@@ -6,18 +6,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.graphhopper.util.Instruction;
-import com.graphhopper.util.PointList;
-
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
 import trucksimulation.routing.RouteSegment;
 import trucksimulation.routing.TargetExceededException;
-import trucksimulation.traffic.LocalDateTimeAdapter;
 import trucksimulation.traffic.TrafficIncident;
 
 public class Truck {

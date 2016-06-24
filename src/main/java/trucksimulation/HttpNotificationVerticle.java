@@ -22,14 +22,14 @@ public class HttpNotificationVerticle extends AbstractVerticle {
 	@Override
 	public void start() throws Exception {
 		try {
-			postToHttpListener();
+			registerBoxMessageListener();
 		} catch(MalformedURLException ex) {
 			LOGGER.error("http receiver url is not valid. No notifications will be posted. " + ex.getMessage());
 			vertx.undeploy(this.deploymentID());
 		}
 	}
 
-	private void postToHttpListener() throws MalformedURLException {
+	private void registerBoxMessageListener() throws MalformedURLException {
 		URL url = new URL(config().getJsonObject("simulation", new JsonObject()).getString("receiverUrl"));
 		String host = url.getHost();
 		int port = url.getPort();

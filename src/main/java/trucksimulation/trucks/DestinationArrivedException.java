@@ -9,6 +9,8 @@ package trucksimulation.trucks;
  */
 public class DestinationArrivedException extends IllegalStateException {
 
+	private static final long serialVersionUID = 1L;
+
 	public DestinationArrivedException() {
 	}
 
