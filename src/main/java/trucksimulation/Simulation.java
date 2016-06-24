@@ -1,5 +1,7 @@
 package trucksimulation;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,6 +42,7 @@ public class Simulation {
 	private int incidentCount;
 	private Future<Boolean> allRoutesLoaded = Future.future();
 	private Future<Boolean> allIncidentsAssigned = Future.future();
+	private LocalDateTime startTime;
 	/**
 	 * interval in which the trucks' positions should be updated in the simulation.
 	 */
@@ -75,6 +78,7 @@ public class Simulation {
 		LOGGER.info("Simulation start requested for simulation " + id);
 		allIncidentsAssigned.setHandler(h -> {
 			LOGGER.info("simulation initialisation completed, starting simulation.");
+			startTime = LocalDateTime.now(ZoneOffset.UTC);
 			for(Truck truck : trucks) {
 				long timerId = startMoving(truck);
 				timerIds.add(timerId);
@@ -293,6 +297,20 @@ public class Simulation {
 
 	public List<Truck> getTrucks() {
 		return trucks;
+	}
+
+	/**
+	 * Returns the time at which the simulation actually started 
+	 * (which usually differs from the time when the start method has been called due to async loading of data).
+	 * 
+	 * @return start time
+	 */
+	public LocalDateTime getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(LocalDateTime startTime) {
+		this.startTime = startTime;
 	}
 
 	public boolean isEndlessMode() {
