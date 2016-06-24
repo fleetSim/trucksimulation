@@ -1,7 +1,8 @@
 {
+	"port": 8080,
 	"simulation": {
 		"osmFile": "osm/germany-latest.osm.pbf",
-		"msgInterval": 3,
+		"msgInterval": 10,
 		"receiverUrl": "http://localhost:9090/api/v1/fleet-telematics",
 		"interval_ms": 200
 	},

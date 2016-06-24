@@ -23,7 +23,7 @@ public class Server extends AbstractVerticle {
 	    setUpBusBridge(router);
 	    setUpRoutes(router);
 	    router.route().handler(StaticHandler.create());
-	    vertx.createHttpServer().requestHandler(router::accept).listen(8080);
+	    vertx.createHttpServer().requestHandler(router::accept).listen(config().getInteger("port", 8080));
 	}
 	
 	private void setUpBusBridge(final Router router) {

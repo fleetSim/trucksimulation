@@ -37,6 +37,7 @@ An exemplary configuration file might look like this:
 
 ```json
 {
+	"port": 8080,
 	"simulation": {
 		"osmFile": "osm/germany-latest.osm.pbf",
 		"msgInterval": 1,
