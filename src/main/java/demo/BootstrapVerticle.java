@@ -14,6 +14,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
+import trucksimulation.Bus;
 import trucksimulation.Serializer;
 import trucksimulation.SimulationControllerVerticle;
 import trucksimulation.routing.Position;
@@ -149,7 +150,7 @@ public class BootstrapVerticle extends AbstractVerticle {
 		JsonObject msg = new JsonObject().put("from", new JsonObject(from)).put("to", new JsonObject(to));
 		
 		// calculate routes
-		vertx.eventBus().send("routes.calculate", msg, (AsyncResult<Message<String>> rpl) -> {
+		vertx.eventBus().send(Bus.CALC_ROUTE.address(), msg, (AsyncResult<Message<String>> rpl) -> {
 			if(rpl.succeeded()) {
 				JsonObject route = new JsonObject(rpl.result().body());
 				route.put("simulation", simId);

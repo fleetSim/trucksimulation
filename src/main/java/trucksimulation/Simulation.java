@@ -22,11 +22,12 @@ import trucksimulation.traffic.TrafficIncident;
 import trucksimulation.trucks.DestinationArrivedException;
 import trucksimulation.trucks.TelemetryData;
 import trucksimulation.trucks.Truck;
+import trucksimulation.trucks.TruckEventListener;
 
 /**
  * Simulation representation.
  */
-public class Simulation {
+public class Simulation implements TruckEventListener {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimulationControllerVerticle.class);
 	
@@ -80,6 +81,7 @@ public class Simulation {
 			LOGGER.info("simulation initialisation completed, starting simulation.");
 			startTime = LocalDateTime.now(ZoneOffset.UTC);
 			for(Truck truck : trucks) {
+				truck.setTrafficEventListener(this);
 				long timerId = startMoving(truck);
 				timerIds.add(timerId);
 			}
@@ -120,7 +122,7 @@ public class Simulation {
 		this.timerIds.remove(timerId);
 		if(!isRunning()) {
 			LOGGER.info("Simulation " + this.id + " has ended, all trucks arrived");
-			vertx.eventBus().publish("simulation.ended", new JsonObject().put("id", this.id));
+			vertx.eventBus().publish(Bus.SIMULATION_ENDED.address(), new JsonObject().put("id", this.id));
 		}
 	}
 	
@@ -133,7 +135,7 @@ public class Simulation {
 		TelemetryData correctData = truck.getTelemetryBox().getTelemetryData();
 		Gson gson = Serializer.get();
 		JsonObject correctDataJson = new JsonObject(gson.toJson(correctData)).put("truckId", truck.getId());
-		vertx.eventBus().publish("trucks.real", correctDataJson);
+		vertx.eventBus().publish(Bus.BOX_MSG.address(), correctDataJson);
 		
 		int ctr = intervalCounters.get(truck.getId()) + 1;
 		intervalCounters.put(truck.getId(), ctr);
@@ -141,8 +143,23 @@ public class Simulation {
 			intervalCounters.put(truck.getId(), 0);
 			TelemetryData inexactData = truck.getTelemetryBoxInexact().getTelemetryData();
 			JsonObject dataJson = new JsonObject(gson.toJson(inexactData)).put("truckId", truck.getId());
-			vertx.eventBus().publish("trucks", dataJson);
+			vertx.eventBus().publish(Bus.BOX_MSG_DETER.address(), dataJson);
 		}
+	}
+	
+	@Override
+	public void handleTrafficEvent(Truck truck, int type) {
+		JsonObject truckStateMessage = new JsonObject().put("truckId", truck.getId()).put("ts", System.currentTimeMillis());
+		switch (type) {
+		case ENTER_TRAFFIC:
+			truckStateMessage.put("event", "enter-traffic");
+			break;
+		case LEAVE_TRAFFIC:
+			truckStateMessage.put("event", "leave-traffic");
+		default:
+			break;
+		}
+		vertx.eventBus().publish(Bus.TRUCK_STATE.address(), truckStateMessage);
 	}
 	
 	public void stop() {

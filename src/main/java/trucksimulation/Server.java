@@ -79,7 +79,7 @@ public class Server extends AbstractVerticle {
 	
 	private void getSimulation(RoutingContext ctx) {
 		JsonObject simulation = ctx.get("simulation");
-		vertx.eventBus().send("simulation.status", simulation.getString("_id"), reply -> {
+		vertx.eventBus().send(Bus.SIMULATION_STATUS.address(), simulation.getString("_id"), reply -> {
 					Boolean isRunning = (Boolean) reply.result().body();
 					simulation.put("isRunning", isRunning);
 					JsonResponse.build(ctx).end(simulation.toString());
@@ -91,7 +91,7 @@ public class Server extends AbstractVerticle {
 		if(simulation == null) {
 			throw new IllegalArgumentException("daum!");
 		}
-		vertx.eventBus().send("simulation.start", simulation, h -> {
+		vertx.eventBus().send(Bus.START_SIMULATION.address(), simulation, h -> {
 			if(h.succeeded()) {
 				JsonResponse.build(ctx).end(new JsonObject().put("status", "started").toString());
 			} else {
@@ -103,7 +103,7 @@ public class Server extends AbstractVerticle {
 	private void stopSimulation(RoutingContext ctx) {
 		JsonObject simulation = ctx.get("simulation");
 		JsonObject query = new JsonObject().put("_id", simulation.getString("_id"));
-		vertx.eventBus().publish("simulation.stop", query);
+		vertx.eventBus().publish(Bus.STOP_SIMULATION.address(), query);
 		JsonResponse.build(ctx).end(new JsonObject().put("status", "stopped").toString());
 	}
 	

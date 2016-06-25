@@ -24,6 +24,7 @@ public class Truck {
 	private List<TrafficIncident> incidents = new ArrayList<>();
 	/** points to the current traffic incident if the truck is affected by one. null otherwise. */
 	private TrafficIncident curIncident = null;
+	private TruckEventListener trafficEventListener;
 	
 	private double speed = 5.0;
 	private Position pos;
@@ -207,13 +208,21 @@ public class Truck {
 		this.speed = incident.getSpeed();
 		curIncident = incident;
 		LOGGER.info("Truck " + this.getId() + " has entered traffic " + curIncident);
+		if(trafficEventListener != null) {
+			trafficEventListener.handleTrafficEvent(this, TruckEventListener.ENTER_TRAFFIC);
+		}
 	}
 	
 	private void leaveTraffic(TrafficIncident incident) {
 		this.speed = route.getSegment(curRouteSegment).getSpeed();
 		LOGGER.info("Truck " + this.getId() + " has left traffic " + curIncident);
 		curIncident = null;
+		if(trafficEventListener != null) {
+			trafficEventListener.handleTrafficEvent(this, TruckEventListener.LEAVE_TRAFFIC);
+		}
+		
 	}
+
 
 	public TrafficIncident getCurIncident() {
 		return curIncident;
@@ -246,6 +255,13 @@ public class Truck {
 		return this.pos.equals(route.getGoal());
 	}
 	
+	public TruckEventListener getTrafficEventListener() {
+		return trafficEventListener;
+	}
+
+	public void setTrafficEventListener(TruckEventListener trafficEventListener) {
+		this.trafficEventListener = trafficEventListener;
+	}
 	
 	
 

@@ -9,6 +9,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import trucksimulation.Bus;
 import trucksimulation.Serializer;
 
 public class RouteCalculationVerticle extends AbstractVerticle {
@@ -22,7 +23,7 @@ public class RouteCalculationVerticle extends AbstractVerticle {
 		osmFile = simConf.getString("osmFile", new File("osm", "denmark-latest.osm.pbf").getAbsolutePath());
 		LOGGER.info("Using osm file " + osmFile + " for route calculations.");
 		
-		vertx.eventBus().consumer("routes.calculate", this::calcRoute);
+		vertx.eventBus().consumer(Bus.CALC_ROUTE.address(), this::calcRoute);
 	}
 	
 	private void calcRoute(Message<JsonObject> msg) {

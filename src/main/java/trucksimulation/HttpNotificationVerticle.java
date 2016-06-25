@@ -37,7 +37,7 @@ public class HttpNotificationVerticle extends AbstractVerticle {
 		
 		HttpClientOptions opts = new HttpClientOptions().setDefaultHost(host).setDefaultPort(port).setConnectTimeout(500);
 		HttpClient client = vertx.createHttpClient(opts);
-		vertx.eventBus().consumer("trucks", (Message<JsonObject> msg) -> {
+		vertx.eventBus().consumer(Bus.BOX_MSG_DETER.address(), (Message<JsonObject> msg) -> {
 			client.post(path, response -> {
 				LOGGER.trace("notified " + url.toString());
 			}).putHeader("content-type", "application/json").end(msg.body().toString());

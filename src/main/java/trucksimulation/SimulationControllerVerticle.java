@@ -41,10 +41,10 @@ public class SimulationControllerVerticle extends AbstractVerticle {
 		SharedData sd = vertx.sharedData();
 		simulationStatus = sd.getLocalMap("simStatusMap");
 		
-		vertx.eventBus().consumer("simulation.start", this::startSimulation);
-		vertx.eventBus().consumer("simulation.stop", this::stopSimulation);
-		vertx.eventBus().consumer("simulation.status", this::getSimulationStatus);
-		vertx.eventBus().consumer("simulation.ended", this::handleSimulationEnded);
+		vertx.eventBus().consumer(Bus.START_SIMULATION.address(), this::startSimulation);
+		vertx.eventBus().consumer(Bus.STOP_SIMULATION.address(), this::stopSimulation);
+		vertx.eventBus().consumer(Bus.SIMULATION_STATUS.address(), this::getSimulationStatus);
+		vertx.eventBus().consumer(Bus.SIMULATION_ENDED.address(), this::handleSimulationEnded);
 	}	
 	
 	
