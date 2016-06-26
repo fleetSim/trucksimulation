@@ -148,17 +148,11 @@ public class Simulation implements TruckEventListener {
 	}
 	
 	@Override
-	public void handleTrafficEvent(Truck truck, int type) {
-		JsonObject truckStateMessage = new JsonObject().put("truckId", truck.getId()).put("ts", System.currentTimeMillis());
-		switch (type) {
-		case ENTER_TRAFFIC:
-			truckStateMessage.put("event", "enter-traffic");
-			break;
-		case LEAVE_TRAFFIC:
-			truckStateMessage.put("event", "leave-traffic");
-		default:
-			break;
-		}
+	public void handleTrafficEvent(Truck truck, EventType type) {
+		JsonObject truckStateMessage = new JsonObject() //
+				.put("truckId", truck.getId()) //
+				.put("ts", System.currentTimeMillis()) //
+				.put("eventType", type.name());
 		vertx.eventBus().publish(Bus.TRUCK_STATE.address(), truckStateMessage);
 	}
 	

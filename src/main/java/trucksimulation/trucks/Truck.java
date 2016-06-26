@@ -209,7 +209,7 @@ public class Truck {
 		curIncident = incident;
 		LOGGER.info("Truck " + this.getId() + " has entered traffic " + curIncident);
 		if(trafficEventListener != null) {
-			trafficEventListener.handleTrafficEvent(this, TruckEventListener.ENTER_TRAFFIC);
+			trafficEventListener.handleTrafficEvent(this, TruckEventListener.EventType.ENTER_TRAFFIC);
 		}
 	}
 	
@@ -218,7 +218,7 @@ public class Truck {
 		LOGGER.info("Truck " + this.getId() + " has left traffic " + curIncident);
 		curIncident = null;
 		if(trafficEventListener != null) {
-			trafficEventListener.handleTrafficEvent(this, TruckEventListener.LEAVE_TRAFFIC);
+			trafficEventListener.handleTrafficEvent(this, TruckEventListener.EventType.LEAVE_TRAFFIC);
 		}
 		
 	}

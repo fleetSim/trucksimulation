@@ -1,5 +1,6 @@
 package trucksimulation;
 
+import amqp.AmqpBridgeVerticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.logging.Logger;
@@ -18,25 +19,34 @@ public class StarterVerticle extends AbstractVerticle {
 
 		vertx.deployVerticle(new RouteCalculationVerticle(), routeMgrOptions, w -> {
 			if (w.failed()) {
-				LOGGER.error("Deployment of RouteManager failed." + w.cause());
+				LOGGER.error("Deployment of RouteManager failed.", w.cause());
 			}
 			vertx.deployVerticle(new SimulationControllerVerticle(), deplOptions, e -> {
 				if (e.failed()) {
-					LOGGER.error("Deployment of TruckController failed." + e.cause());
+					LOGGER.error("Deployment of TruckController failed.", e.cause());
 				}
 			});
 		});
 
 		vertx.deployVerticle(new Server(), deplOptions, e -> {
 			if (e.failed()) {
-				LOGGER.error("Deployment of server failed. " + e.cause());
+				LOGGER.error("Deployment of server failed. ", e.cause());
 			}
 		});
 		
 		vertx.deployVerticle(new HttpNotificationVerticle(), deplOptions, h -> {
 			if (h.failed()) {
-				LOGGER.error("Deployment of http notification verticle failed. " + h.cause());
+				LOGGER.error("Deployment of http notification verticle failed. ", h.cause());
 			}
 		});
+		
+		if(config().getJsonObject("amqp").getBoolean("enabled", false)) {
+			vertx.deployVerticle(new AmqpBridgeVerticle(), deplOptions, h -> {
+				if (h.failed()) {
+					LOGGER.error("Deployment of AMQP bridge verticle failed. ", h.cause());
+				}
+			});
+		}
+
 	}
 }

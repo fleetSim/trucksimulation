@@ -8,5 +8,9 @@
 	},
 	"mongodb": {
 		"db_name": "trucksimulation"
+	},
+	"amqp": {
+		"enabled": true,
+		"uri": "amqp://localhost"
 	}
 }
