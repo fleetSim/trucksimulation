@@ -28,8 +28,8 @@ public class Server extends AbstractVerticle {
 	
 	private void setUpBusBridge(final Router router) {
 		BridgeOptions opts = new BridgeOptions()//
-				.addOutboundPermitted(new PermittedOptions().setAddress("trucks"))//
-				.addOutboundPermitted(new PermittedOptions().setAddress("trucks.real"));
+				.addOutboundPermitted(new PermittedOptions().setAddress(Bus.BOX_MSG.address()))//
+				.addOutboundPermitted(new PermittedOptions().setAddress(Bus.BOX_MSG_DETER.address()));
 	    SockJSHandler ebHandler = SockJSHandler.create(vertx).bridge(opts);
 	    router.route("/eventbus/*").handler(ebHandler);
 	}
