@@ -101,13 +101,15 @@ public class BootstrapVerticle extends AbstractVerticle {
 		Position hamburg = new Position(53.551085, 9.993682);
 		Position munich = new Position(48.135125, 11.581981);
 		
-		mongo.insert("simulations", new JsonObject().put("_id", "demo").put("description", "large demo simulation"), sim -> {
+		mongo.insert("simulations", new JsonObject().put("_id", "demo").put("description", "small demo simulation"), sim -> {
 			createSimulationData(berlin, factoryStuttgart, "demo");
 			createSimulationData(hamburg, factoryStuttgart, "demo");
 			createSimulationData(munich, factoryStuttgart, "demo");
 		});
 		
-		createRandomSimulationData("demoBig");
+		mongo.insert("simulations", new JsonObject().put("_id", "demoBig").put("description", "large demo simulation"), h -> {
+			createRandomSimulationData("demoBig");
+		});
 	}
 	
 	/**
@@ -178,10 +180,12 @@ public class BootstrapVerticle extends AbstractVerticle {
 		JsonArray geometries = route.getJsonObject("segments").getJsonArray("geometries");
 		JsonArray startCoord, endCoord;
 		List<JsonObject> incidents = new ArrayList<>();
+		long gapBetweenIncidents = Long.MAX_VALUE;
 		
 		for(Object geo : geometries) {
 			JsonObject geometry = (JsonObject) geo;
-			if(geometry.getDouble("distance") > 1000 && incidents.size() < max) {
+			
+			if(geometry.getDouble("distance") > 1000 && geometry.getDouble("distance") < 5000 && incidents.size() < max && gapBetweenIncidents > 5000) {
 				JsonArray coordinates = geometry.getJsonArray("coordinates");
 				startCoord = coordinates.getJsonArray(0);
 				endCoord = coordinates.getJsonArray(coordinates.size() - 1);
@@ -193,6 +197,10 @@ public class BootstrapVerticle extends AbstractVerticle {
 				incident.put("end", endPos);
 				incident.put("speed", 1.0);
 				incidents.add(incident);
+				
+				gapBetweenIncidents = 0;
+			} else {
+				gapBetweenIncidents += geometry.getDouble("distance");
 			}
 		}
 		return incidents;
