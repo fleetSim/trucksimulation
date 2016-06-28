@@ -69,7 +69,7 @@ public class Truck {
 	 * @param pauseTimeMinutes pause time in minutes
 	 */
 	public void pause(int pauseTimeMinutes) {
-		LOGGER.info("truck %s is having a break for %d minutes.", id, pauseTimeMinutes);
+		LOGGER.info("truck `{0}` is having a break for {1} minute/s.", id, pauseTimeMinutes);
 		this.idleCountdown = pauseTimeMinutes * 60;
 	}
 	
