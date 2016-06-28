@@ -107,6 +107,7 @@ public class Simulation implements TruckEventListener {
 			} catch(DestinationArrivedException ex) {
 				LOGGER.info("Truck has arrived at destination: #" + truck.getId());
 				if(endlessMode) {
+					truck.pause(10);
 					assignNewRoute(truck);
 				} else {
 					cancelTimer(timerId);

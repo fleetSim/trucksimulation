@@ -25,6 +25,7 @@ public class Truck {
 	/** points to the current traffic incident if the truck is affected by one. null otherwise. */
 	private TrafficIncident curIncident = null;
 	private TruckEventListener trafficEventListener;
+	private int idleCountdown = 0;
 	
 	private double speed = 5.0;
 	private Position pos;
@@ -59,7 +60,39 @@ public class Truck {
 		return t;
 	}
 	
-	public void move(double moveSpeed) {
+	/**
+	 * Instructs the truck to idel for the specified amount of minutes.<br>
+	 * Consequent calls to {@link #move()} will not change the trucks position until the pause time is over.<br>
+	 * 
+	 * When called while a truck is already in pause mode, the current remaining pause time is replaced with the new value.
+	 * 
+	 * @param pauseTimeMinutes pause time in minutes
+	 */
+	public void pause(int pauseTimeMinutes) {
+		LOGGER.info("truck %s is having a break for %d minutes.", id, pauseTimeMinutes);
+		this.idleCountdown = pauseTimeMinutes * 60;
+	}
+	
+	public boolean isInPauseMode() {
+		return this.idleCountdown > 0;
+	}
+	
+	/**
+	 * Moves the truck forward on its assigned route (unless it is in pause mode).
+	 * 
+	 * Throws a DestinationArrivedException if the truck is already at the last point of the route.
+	 * 
+	 * @see #pause(int)
+	 */
+	public void move() {
+		if(isInPauseMode()) {
+			idleCountdown--;
+		} else {
+			move(speed);
+		}
+	}
+	
+	private void move(double moveSpeed) {
 		if(pos.equals(targetPos)) {
 			throw new DestinationArrivedException("Already arrived at destination. Set a new destination / route.");
 		}
@@ -75,16 +108,7 @@ public class Truck {
 		telemetryBoxInexact.update(pos, ts);
 		updateTrafficMode();
 	}
-	
-	/**
-	 * Moves the truck forward on its assigned route.
-	 * 
-	 * Throws a DestinationArrivedException if the truck is already at the last point of the route.
-	 */
-	public void move() {
-		move(speed);
-	}
-	
+
 	private void proceedToNextPoint() {	
 		RouteSegment currentSegment = route.getSegment(curRouteSegment);
 		if(currentSegment.getSize() > curSegmentPoint + 1) {
@@ -261,8 +285,6 @@ public class Truck {
 
 	public void setTrafficEventListener(TruckEventListener trafficEventListener) {
 		this.trafficEventListener = trafficEventListener;
-	}
-	
-	
+	}	
 
 }
