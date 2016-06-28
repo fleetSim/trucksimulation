@@ -90,4 +90,70 @@ Clients can connect using the [vertx3-eventbus-client](https://www.npmjs.com/pac
 
 
 ## Management API
-In a future release it will be possible to create and control simulation projects using a RESTful API.
+
+### listing available simulations
+
+`curl -X GET http://localhost:8080/api/v1/simulations`
+
+```json
+[
+    {
+        "_id": "demo",
+        "description": "small demo simulation"
+    },
+    {
+        "_id": "demoBig",
+        "description": "large endless simulation",
+        "endless": true
+    }
+]
+```
+
+### starting/stopping a simulation
+
+In order to start the simulation *demo*, issue a POST request to `http://localhost:8080/api/v1/simulations/demo/start`
+
+`curl -X POST http://localhost:8080/api/v1/simulations/demo/start`
+
+```json
+{
+    "status": "started"
+}
+```
+
+and to stop it:
+
+`curl -X POST http://localhost:8080/api/v1/simulations/demo/stop`
+
+```json
+{
+    "status": "stopped"
+}
+```
+
+
+### listing trucks that belong to a simulation
+
+`curl http://localhost:8080/api/v1/simulations/demo/trucks`
+
+```json
+
+[
+    {
+        "_id": "5772c761320e5c287a200d0f",
+        "route": "5772c761320e5c287a200d0e",
+        "simulation": "demo"
+    },
+    {
+        "_id": "5772c75f320e5c287a200d0a",
+        "route": "5772c75f320e5c287a200d09",
+        "simulation": "demo"
+    },
+    {
+        "_id": "5772c75e320e5c287a200d05",
+        "route": "5772c75e320e5c287a200d04",
+        "simulation": "demo"
+    }
+]
+```
+
