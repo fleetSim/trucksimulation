@@ -117,28 +117,20 @@ public class BootstrapVerticle extends AbstractVerticle {
 	 * @param simId name of the simulation
 	 */
 	private void createRandomSimulationData(String simId) {
-		JsonObject sample = new JsonObject().put("$sample", new JsonObject().put("size", 100));
-		JsonObject aggregate = new JsonObject();
-		aggregate.put("aggregate", "cities").put("pipeline", new JsonArray().add(sample));
 		
-		mongo.insert("simulations", new JsonObject().put("_id", simId).put("description", "large demo simulation"), sim -> {
-			
-		});
-		mongo.runCommand("aggregate", aggregate, res -> {
-			if(res.failed()) {
-				System.out.println(res.cause());
-			} else {
-				JsonArray cities = res.result().getJsonArray("result");
-				for(int i = 0; i + 1 < cities.size(); i += 2) {
-					JsonArray startPos = ((JsonObject) cities.getJsonObject(i)).getJsonObject("pos").getJsonArray("coordinates");
-					JsonArray destPos = ((JsonObject) cities.getJsonObject(i+1)).getJsonObject("pos").getJsonArray("coordinates");
-					Position start = new Position(startPos.getDouble(1), startPos.getDouble(0));
-					Position dest = new Position(destPos.getDouble(1), destPos.getDouble(0));
-					createSimulationData(start, dest, simId);
-				}
+		vertx.eventBus().send(Bus.CITY_SAMPLE.address(), new JsonObject().put("size", 100), (AsyncResult<Message<JsonArray>> res) -> {
+			JsonArray cities = res.result().body();
+			for(int i = 0; i + 1 < cities.size(); i += 2) {
+				JsonArray startPos = ((JsonObject) cities.getJsonObject(i)).getJsonObject("pos").getJsonArray("coordinates");
+				JsonArray destPos = ((JsonObject) cities.getJsonObject(i+1)).getJsonObject("pos").getJsonArray("coordinates");
+				Position start = new Position(startPos.getDouble(1), startPos.getDouble(0));
+				Position dest = new Position(destPos.getDouble(1), destPos.getDouble(0));
+				createSimulationData(start, dest, simId);
 			}
-			
-		});		
+		});
+
+
+	
 	}
 	
 	/**

@@ -12,11 +12,15 @@ import java.util.Set;
 
 import com.google.gson.Gson;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
 import trucksimulation.traffic.TrafficIncident;
 import trucksimulation.trucks.DestinationArrivedException;
@@ -103,9 +107,7 @@ public class Simulation implements TruckEventListener {
 			} catch(DestinationArrivedException ex) {
 				LOGGER.info("Truck has arrived at destination: #" + truck.getId());
 				if(endlessMode) {
-					// resets the truck so that it drives the same route again
-					// TODO: truck should drive back, not beam to different position
-					truck.setRoute(truck.getRoute());
+					assignNewRoute(truck);
 				} else {
 					cancelTimer(timerId);
 				}
@@ -115,6 +117,33 @@ public class Simulation implements TruckEventListener {
 			}
 		});
 		return tId;
+	}
+	
+	/**
+	 * Retrieves a random city and sets it as the new destination for the truck.
+	 * 
+	 * @param truck
+	 */
+	private void assignNewRoute(Truck truck) {
+		Gson gson = Serializer.get();
+		vertx.eventBus().send(Bus.CITY_SAMPLE.address(), new JsonObject().put("size", 1), (AsyncResult<Message<JsonArray>> repl) -> {
+			JsonObject city = repl.result().body().getJsonObject(0);
+			JsonArray destPos = city.getJsonObject("pos").getJsonArray("coordinates");
+			String to = gson.toJson(new Position(destPos.getDouble(1), destPos.getDouble(0)));
+			String from = gson.toJson(truck.getPos());
+			JsonObject msg = new JsonObject().put("from", new JsonObject(from)).put("to", new JsonObject(to));	
+			
+			vertx.eventBus().send(Bus.CALC_ROUTE.address(), msg, (AsyncResult<Message<String>> r) -> {
+				if(r.succeeded()) {
+					Route route = gson.fromJson(r.result().body(), Route.class);
+					truck.setRoute(route);
+					LOGGER.info(String.format("truck #%s: new destination is %s", city.getString("name")));
+				} else {
+					// destination not found on map, retry
+					assignNewRoute(truck);
+				}
+			});
+		});
 	}
 	
 	private void cancelTimer(long timerId) {

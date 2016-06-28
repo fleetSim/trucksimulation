@@ -9,7 +9,8 @@ public enum Bus {
 	BOX_MSG_DETER("truck.box.deteriorated"),
 	BOX_MSG("truck.box"),
 	CALC_ROUTE("route.calculate"),
-	AMQP_PUB("amqp.publish");
+	AMQP_PUB("amqp.publish"),
+	CITY_SAMPLE("cities.sample");
 	
 	private String address;
 	Bus(String address) {
