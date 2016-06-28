@@ -128,23 +128,27 @@ public class Simulation implements TruckEventListener {
 	private void assignNewRoute(Truck truck) {
 		Gson gson = Serializer.get();
 		vertx.eventBus().send(Bus.CITY_SAMPLE.address(), new JsonObject().put("size", 1), (AsyncResult<Message<JsonArray>> repl) -> {
-			JsonObject city = repl.result().body().getJsonObject(0);
-			JsonArray destPos = city.getJsonObject("pos").getJsonArray("coordinates");
-			String to = gson.toJson(new Position(destPos.getDouble(1), destPos.getDouble(0)));
-			String from = gson.toJson(truck.getPos());
-			JsonObject msg = new JsonObject().put("from", new JsonObject(from)).put("to", new JsonObject(to));	
-			
-			vertx.eventBus().send(Bus.CALC_ROUTE.address(), msg, (AsyncResult<Message<String>> r) -> {
-				if(r.succeeded()) {
-					Route route = gson.fromJson(r.result().body(), Route.class);
-					truck.setRoute(route);
-					LOGGER.info("truck `{0}`: new destination is {1}", truck.getId(), city.getString("name"));
-				} else {
-					// destination not found on map, retry
-					LOGGER.warn("truck `{0}`: failed to assign new destination", truck.getId(), r.cause());
-					assignNewRoute(truck);
-				}
-			});
+			if(repl.succeeded()) {
+				JsonObject city = repl.result().body().getJsonObject(0);
+				JsonArray destPos = city.getJsonObject("pos").getJsonArray("coordinates");
+				String to = gson.toJson(new Position(destPos.getDouble(1), destPos.getDouble(0)));
+				String from = gson.toJson(truck.getPos());
+				JsonObject msg = new JsonObject().put("from", new JsonObject(from)).put("to", new JsonObject(to));	
+				
+				vertx.eventBus().send(Bus.CALC_ROUTE.address(), msg, (AsyncResult<Message<String>> r) -> {
+					if(r.succeeded()) {
+						Route route = gson.fromJson(r.result().body(), Route.class);
+						truck.setRoute(route);
+						LOGGER.info("truck `{0}`: new destination is {1}", truck.getId(), city.getString("name"));
+					} else {
+						// destination not found on map, retry
+						LOGGER.warn("truck `{0}`: failed to assign new destination", truck.getId(), r.cause());
+						assignNewRoute(truck);
+					}
+				});	
+			} else {
+				LOGGER.error("truck `{0}`: failed to assign new destination", truck.getId(), repl.cause());
+			}
 		});
 	}
 	

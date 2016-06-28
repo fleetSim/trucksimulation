@@ -4,7 +4,8 @@
 		"osmFile": "osm/germany-latest.osm.pbf",
 		"msgInterval": 10,
 		"receiverUrl": "http://localhost:9090/api/v1/fleet-telematics",
-		"interval_ms": 200
+		"postData": false,
+		"interval_ms": 4
 	},
 	"mongodb": {
 		"db_name": "trucksimulation"

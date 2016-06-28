@@ -26,6 +26,7 @@ public class Truck {
 	private TrafficIncident curIncident = null;
 	private TruckEventListener trafficEventListener;
 	private int idleCountdown = 0;
+	private boolean needsNewRoute = false;
 	
 	private double speed = 5.0;
 	private Position pos;
@@ -87,14 +88,22 @@ public class Truck {
 	public void move() {
 		if(isInPauseMode()) {
 			idleCountdown--;
+			if(!isInPauseMode()) {
+				LOGGER.info("truck `{0}` completed its break.", id);
+			}
 		} else {
 			move(speed);
 		}
 	}
 	
 	private void move(double moveSpeed) {
-		if(pos.equals(targetPos)) {
+		if(hasArrived() && !needsNewRoute) {
+			// use needsNewRoute flag to ensure exception is only called once per destination
+			needsNewRoute = true;
 			throw new DestinationArrivedException("Already arrived at destination. Set a new destination / route.");
+		} else if (needsNewRoute) {
+			// don't move until a new route has been set
+			return;
 		}
 		try {
 			pos = pos.moveTowards(targetPos, moveSpeed * interval);
@@ -128,6 +137,7 @@ public class Truck {
 					speed = nextSpeed;
 				}
 			} else {
+				needsNewRoute = true;
 				throw new DestinationArrivedException("Truck has reached its target. Please assign a new route before proceeding.");
 			}
 		}
@@ -145,6 +155,7 @@ public class Truck {
 	
 	/**
 	 * Assigns a route to the truck and positions the truck at the start of the route.
+	 * 
 	 * @param route
 	 */
 	public void setRoute(Route route) {
@@ -152,6 +163,7 @@ public class Truck {
 		this.pos = route.getStart();
 		curRouteSegment = 0;
 		curSegmentPoint = 0;
+		needsNewRoute = false;
 		this.proceedToNextPoint();
 	}
 
