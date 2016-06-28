@@ -231,7 +231,7 @@ public class Truck {
 		}
 		this.speed = incident.getSpeed();
 		curIncident = incident;
-		LOGGER.info("Truck " + this.getId() + " has entered traffic " + curIncident);
+		LOGGER.info("truck `{0}` has entered traffic `{1}`", id, curIncident);
 		if(trafficEventListener != null) {
 			trafficEventListener.handleTrafficEvent(this, TruckEventListener.EventType.ENTER_TRAFFIC);
 		}
@@ -239,7 +239,7 @@ public class Truck {
 	
 	private void leaveTraffic(TrafficIncident incident) {
 		this.speed = route.getSegment(curRouteSegment).getSpeed();
-		LOGGER.info("Truck " + this.getId() + " has left traffic " + curIncident);
+		LOGGER.info("truck `{0}` has left traffic `{1}`", id, curIncident);
 		curIncident = null;
 		if(trafficEventListener != null) {
 			trafficEventListener.handleTrafficEvent(this, TruckEventListener.EventType.LEAVE_TRAFFIC);

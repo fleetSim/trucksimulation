@@ -123,7 +123,7 @@ public class Position {
 
 	@Override
 	public String toString() {
-		return String.format("(%f,\t %f)", lat, lon);
+		return String.format("(%f, %f)", lat, lon);
 	}
 
 	@Override

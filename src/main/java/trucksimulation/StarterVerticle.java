@@ -3,6 +3,7 @@ package trucksimulation;
 import amqp.AmqpBridgeVerticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import trucksimulation.routing.RouteCalculationVerticle;
@@ -34,11 +35,14 @@ public class StarterVerticle extends AbstractVerticle {
 			}
 		});
 		
-		vertx.deployVerticle(new HttpNotificationVerticle(), deplOptions, h -> {
-			if (h.failed()) {
-				LOGGER.error("Deployment of http notification verticle failed. ", h.cause());
-			}
-		});
+		
+		if(config().getJsonObject("simulation", new JsonObject()).getBoolean("postData", true)) {
+			vertx.deployVerticle(new HttpNotificationVerticle(), deplOptions, h -> {
+				if (h.failed()) {
+					LOGGER.error("Deployment of http notification verticle failed. ", h.cause());
+				}
+			});
+		}
 		
 		if(config().getJsonObject("amqp").getBoolean("enabled", false)) {
 			vertx.deployVerticle(new AmqpBridgeVerticle(), deplOptions, h -> {

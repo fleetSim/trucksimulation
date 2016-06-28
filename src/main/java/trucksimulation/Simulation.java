@@ -80,9 +80,9 @@ public class Simulation implements TruckEventListener {
 	 * @see #addTrafficIncident(TrafficIncident, List)
 	 */
 	public void start() {
-		LOGGER.info("Simulation start requested for simulation " + id);
+		LOGGER.info("simulation `{0}`: start requested", id);
 		allIncidentsAssigned.setHandler(h -> {
-			LOGGER.info("simulation initialisation completed, starting simulation.");
+			LOGGER.info("simulation `{0}`: initialization completed, starting simulation with {1} trucks.", id, trucks.size());
 			startTime = LocalDateTime.now(ZoneOffset.UTC);
 			for(Truck truck : trucks) {
 				truck.setTrafficEventListener(this);
@@ -105,7 +105,7 @@ public class Simulation implements TruckEventListener {
 				truck.move();
 				publishBoxData(truck);
 			} catch(DestinationArrivedException ex) {
-				LOGGER.info("Truck has arrived at destination: #" + truck.getId());
+				LOGGER.info("truck `{0}` has arrived at destination", truck.getId());
 				if(endlessMode) {
 					truck.pause(10);
 					assignNewRoute(truck);
@@ -113,7 +113,7 @@ public class Simulation implements TruckEventListener {
 					cancelTimer(timerId);
 				}
 			} catch (Exception ex) {
-				LOGGER.error("Unexpected error, stopping truck #" + truck.getId(), ex);
+				LOGGER.error("truck `{0}`: Unexpected error, stopping", truck.getId(), ex);
 				cancelTimer(timerId);
 			}
 		});
@@ -138,9 +138,10 @@ public class Simulation implements TruckEventListener {
 				if(r.succeeded()) {
 					Route route = gson.fromJson(r.result().body(), Route.class);
 					truck.setRoute(route);
-					LOGGER.info(String.format("truck #%s: new destination is %s", city.getString("name")));
+					LOGGER.info("truck `{0}`: new destination is {1}", truck.getId(), city.getString("name"));
 				} else {
 					// destination not found on map, retry
+					LOGGER.warn("truck `{0}`: failed to assign new destination", truck.getId(), r.cause());
 					assignNewRoute(truck);
 				}
 			});
@@ -151,7 +152,7 @@ public class Simulation implements TruckEventListener {
 		vertx.cancelTimer(timerId);
 		this.timerIds.remove(timerId);
 		if(!isRunning()) {
-			LOGGER.info("Simulation " + this.id + " has ended, all trucks arrived");
+			LOGGER.info("simulation `{0}` has ended, all trucks have arrived", id);
 			vertx.eventBus().publish(Bus.SIMULATION_ENDED.address(), new JsonObject().put("id", this.id));
 		}
 	}
@@ -246,7 +247,7 @@ public class Simulation implements TruckEventListener {
 						}
 					}				
 				}
-				LOGGER.info("Assignment of traffic incidents completed in simulation " + id);
+				LOGGER.info("simulation `{0}`: assignment of traffic incidents completed");
 				allIncidentsAssigned.complete();
 			});
 		}
@@ -264,10 +265,6 @@ public class Simulation implements TruckEventListener {
 		return timerIds.size() >= 1;
 	}
 
-	public Vertx getVertx() {
-		return vertx;
-	}
-
 	public void setVertx(Vertx vertx) {
 		this.vertx = vertx;
 	}
@@ -279,23 +276,15 @@ public class Simulation implements TruckEventListener {
 				t.setRoute(route);
 				truckCount--;
 				if(truckCount == 0) {
-					LOGGER.info("Assignment of truck routes completed in simulation " + id);
+					LOGGER.info("simulation `{0}`: Assignment of truck routes completed", id);
 					allRoutesLoaded.complete();
 				}
 			});
 		} else {
-			LOGGER.warn("Attempted to add route, but simulation has no trucks.");
+			LOGGER.warn("simulation `{0}`: Attempted to add route, but simulation has no trucks.", id);
 		}
 	}
 
-	public List<Long> getTimerIds() {
-		return timerIds;
-	}
-
-	public void setTimerIds(List<Long> timerIds) {
-		this.timerIds = timerIds;
-	}
-	
 	public Future<Boolean> getAllRoutesLoaded() {
 		return allRoutesLoaded;
 	}
@@ -314,7 +303,7 @@ public class Simulation implements TruckEventListener {
 
 	public void setIncidentCount(int incidentCount) {
 		if(incidentCount == 0) {
-			LOGGER.info("No traffic incidents expected for simulation " + id);
+			LOGGER.info("simulation `{0}`: No traffic incidents expected (incident count was set to 0)");
 			allIncidentsAssigned.complete();
 		}
 		this.incidentCount = incidentCount;

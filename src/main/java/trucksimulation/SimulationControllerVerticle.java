@@ -94,7 +94,7 @@ public class SimulationControllerVerticle extends AbstractVerticle {
 	private void stopSimulation(Message<JsonObject> msg) {
 		String simId = msg.body().getString("_id");
 		if(simulations.containsKey(simId)) {
-			LOGGER.info("Stopping simulation " + simId + " in verticle " + this.deploymentID());
+			LOGGER.info("simulation `{0}` is being stopped in verticle {1}", simId, this.deploymentID());
 			Simulation simulation = simulations.get(simId);
 			simulation.stop();
 			simulations.remove(simId);

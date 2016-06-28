@@ -2,6 +2,8 @@ package trucksimulation;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.FindOptions;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.Router;
@@ -11,10 +13,12 @@ import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import trucksimulation.traffic.TrafficManager;
+import trucksimulation.trucks.Truck;
 
 public class Server extends AbstractVerticle {
 	
 	private MongoClient mongo;
+	private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
 	@Override
 	public void start() throws Exception {
@@ -79,10 +83,16 @@ public class Server extends AbstractVerticle {
 	
 	private void getSimulation(RoutingContext ctx) {
 		JsonObject simulation = ctx.get("simulation");
-		vertx.eventBus().send(Bus.SIMULATION_STATUS.address(), simulation.getString("_id"), reply -> {
-					Boolean isRunning = (Boolean) reply.result().body();
-					simulation.put("isRunning", isRunning);
-					JsonResponse.build(ctx).end(simulation.toString());
+		String simId = simulation.getString("_id");
+		vertx.eventBus().send(Bus.SIMULATION_STATUS.address(), simId, reply -> {
+			if(reply.succeeded()) {
+				Boolean isRunning = (Boolean) reply.result().body();
+				simulation.put("isRunning", isRunning);
+				JsonResponse.build(ctx).end(simulation.toString());
+			} else {
+				LOGGER.error("Could not get simulation status for simulation {0}", simId, reply.cause());
+			}
+
 		});
 	}
 	
