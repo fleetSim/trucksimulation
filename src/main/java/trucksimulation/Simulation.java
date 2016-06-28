@@ -33,7 +33,7 @@ import trucksimulation.trucks.TruckEventListener;
  */
 public class Simulation implements TruckEventListener {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(SimulationControllerVerticle.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Simulation.class);
 	
 	private String id;
 	private boolean endlessMode = false;

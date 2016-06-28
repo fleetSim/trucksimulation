@@ -6,7 +6,7 @@
 	<version>0.1.1-SNAPSHOT</version>
 	<name>Truck Simulation</name>
 	<properties>
-		<vertx.version>3.2.1</vertx.version>
+		<vertx.version>3.3.0</vertx.version>
 		<main.verticle>trucksimulation.StarterVerticle</main.verticle>
 		<bootstrap.verticle>demo.BootstrapVerticle</bootstrap.verticle>
 	</properties>
@@ -42,9 +42,9 @@
 			<version>0.6.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.rabbitmq</groupId>
-			<artifactId>amqp-client</artifactId>
-			<version>3.6.2</version>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-rabbitmq-client</artifactId>
+			<version>${vertx.version}</version>
 		</dependency>
 	</dependencies>
 
