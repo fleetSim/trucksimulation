@@ -19,17 +19,24 @@ in the traffic collection contains a geometry and a speed attribute. When a truc
 enters a traffic incident, its speed is lowered to the value specified in the traffic
 incident document.
 
-## Requirements
+## Setup
+
+### Requirements
 
 - MongoDB >= 3.2
 - Java 8
 - maven >= 3.3
 
-## Sample Data
+Import the fixtures with the `mongoimport` tool.
+The cities collection is required to geenrate sample data and to determine random destinations in *endless* mode.
+
+``mongoimport -d trucksimulation -c cities fixtures/DE/citiesde.json`
+
+### Generating Sample Data
 Initially you can run `mvn compile exec:java@bootstrap` to load a demo simulation
 into the datastore and to index the collections in mongodb.
 
-## Configuration
+### Configuration
 The main configuration is a json file. It can be specified when running the application 
 with the `-conf conf.json` option.
 
@@ -40,58 +47,30 @@ An exemplary configuration file might look like this:
 	"port": 8080,
 	"simulation": {
 		"osmFile": "osm/germany-latest.osm.pbf",
-		"msgInterval": 1,
-		"receiverUrl": "http://localhost:1088/trucks",
-		"interval_ms": 500
+		"msgInterval": 10,
+		"receiverUrl": "http://localhost:8081/telematics/fleetsim",
+		"postData": true,
+		"interval_ms": 1000
 	},
 	"mongodb": {
 		"db_name": "trucksimulation"
+	},
+	"amqp": {
+		"enabled": false,
+		"uri": "amqp://localhost"
 	}
 }
 ```
 
 Make sure that the osmFile exists, downloads are e.g. provided 
-by [download.geofabrik.de](http://download.geofabrik.de). The internally used graphhopper library needs
-to process the provided osm file when first calculating a route. This may take some time initially.
+by [download.geofabrik.de](http://download.geofabrik.de). The internally used GraphHopper library needs
+to process the provided OSM file when first calculating a route. This may take some time initially.
 
-## Receiving simulated telematics data
+## Usage
 
-### Eventbus
-The simulation uses vert.x 3 and sends messages via the vert.x eventbus.
-Run the simulation server and an adapter verticle in the same cluster to receive those messages.
+### Management API
 
-### Receiving HTTP requests
-HTTP Post reuests will be sent to the `receiverUrl` specified in the configuration file.
-The URL must contain the protocol and may optionally contain port and path.
-
-The format of an http post request sent by the simulation server looks as follows:
-
-```json
-{ "timeStamp": 1465985004000,
-  "truckId": "57600524c91aff1b6865e0eb",
-  "altitude": 0,
-  "verticalAccuracy": 20,
-  "bearing": 324.08819041630136,
-  "temperature": 20,
-  "horizontalAccuracy": 4,
-  "id": "57600524c91aff1b6865e0eb",
-  "position": 
-   { "type": "Point",
-     "coordinates": [ 11.51435004278778, 48.15301418564581 ] },
-  "speed": 9.863748019093341 }
-```
-
-Speed is provided as m/s, accuracy is in meters and the timestamp is in milliseconds since unix epoch.
-
-
-### SockJS
-Events are emitted using the vert.x sockjs bridge.  
-Clients can connect using the [vertx3-eventbus-client](https://www.npmjs.com/package/vertx3-eventbus-client)
-
-
-## Management API
-
-### listing available simulations
+#### listing available simulations
 
 `curl -X GET http://localhost:8080/api/v1/simulations`
 
@@ -109,7 +88,7 @@ Clients can connect using the [vertx3-eventbus-client](https://www.npmjs.com/pac
 ]
 ```
 
-### starting/stopping a simulation
+#### starting/stopping a simulation
 
 In order to start the simulation *demo*, issue a POST request to `http://localhost:8080/api/v1/simulations/demo/start`
 
@@ -132,7 +111,7 @@ and to stop it:
 ```
 
 
-### listing trucks that belong to a simulation
+#### listing trucks that belong to a simulation
 
 `curl http://localhost:8080/api/v1/simulations/demo/trucks`
 
@@ -156,4 +135,38 @@ and to stop it:
     }
 ]
 ```
+
+### Receiving simulated telematics data
+
+#### Eventbus
+The simulation uses vert.x 3 and sends messages via the vert.x eventbus.
+Run the simulation server and an adapter verticle in the same cluster to receive those messages.
+
+#### Receiving HTTP requests
+HTTP Post reuests will be sent to the `receiverUrl` specified in the configuration file.
+The URL must contain the protocol and may optionally contain port and path.
+
+The format of an http post request sent by the simulation server looks as follows:
+
+```json
+{ "timeStamp": 1465985004000,
+  "truckId": "57600524c91aff1b6865e0eb",
+  "altitude": 0,
+  "verticalAccuracy": 20,
+  "bearing": 324.08819041630136,
+  "temperature": 20,
+  "horizontalAccuracy": 4,
+  "id": "57600524c91aff1b6865e0eb",
+  "position": 
+   { "type": "Point",
+     "coordinates": [ 11.51435004278778, 48.15301418564581 ] },
+  "speed": 9.863748019093341 }
+```
+
+Speed is provided as m/s, accuracy is in meters and the timestamp is in milliseconds since unix epoch.
+
+
+#### SockJS
+Events are emitted using the vert.x sockjs bridge.  
+Clients can connect using the [vertx3-eventbus-client](https://www.npmjs.com/package/vertx3-eventbus-client)
 

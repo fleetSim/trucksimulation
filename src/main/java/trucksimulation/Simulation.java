@@ -307,7 +307,7 @@ public class Simulation implements TruckEventListener {
 
 	public void setIncidentCount(int incidentCount) {
 		if(incidentCount == 0) {
-			LOGGER.info("simulation `{0}`: No traffic incidents expected (incident count was set to 0)");
+			LOGGER.info("simulation `{0}`: No traffic incidents expected (incident count was set to 0)", id);
 			allIncidentsAssigned.complete();
 		}
 		this.incidentCount = incidentCount;
