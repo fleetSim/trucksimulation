@@ -4,24 +4,34 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.gson.Gson;
+import com.graphhopper.GraphHopper;
 
 import io.vertx.core.json.JsonObject;
+import trucksimulation.routing.GraphHopperBuilder;
 import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
 import trucksimulation.routing.RouteSegment;
 
 public class RouteTest {
-
-	@Test
-	public void testAndorra() {
+	
+	private static GraphHopper hopper;
+	
+	@BeforeClass
+	public static void initGraphHopper() {
 		// use different graphhopper cache directory to avoid conflicts
 		String userHome = System.getProperty("user.home");
 		String ghCacheLocation = new File(userHome, ".graphhopper-test").getAbsolutePath();
-		Route r = Route.getRoute(new File("osm", "andorra-latest.osm.pbf").toString(), ghCacheLocation,
-				new Position(42.450656, 1.485264), new Position(42.541762, 1.457115));
+		String osmFile = new File("osm", "andorra-latest.osm.pbf").toString();
+		hopper = GraphHopperBuilder.get(osmFile, ghCacheLocation);
+	}
+
+	@Test
+	public void testAndorra() {
+		Route r = Route.getRoute(hopper, new Position(42.450656, 1.485264), new Position(42.541762, 1.457115));
 		
 		Gson g = new Gson();
 		System.out.println(g.toJson(r));

@@ -1,11 +1,9 @@
 package trucksimulation.routing;
 
 import java.io.File;
-import java.util.Map;
 
 import com.google.gson.Gson;
 import com.graphhopper.GraphHopper;
-import com.graphhopper.routing.util.EncodingManager;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
@@ -38,22 +36,9 @@ public class RouteCalculationVerticle extends AbstractVerticle {
 	
 	private synchronized static void loadGraphHopper(String osmFile) {
 		if(hopper == null) {
-			LOGGER.info("INIT GRAPHHOPPER");			
 			String userHome = System.getProperty("user.home");
 			String ghCacheLocation = new File(userHome, ".graphhopper").getAbsolutePath();
-			// create one GraphHopper instance
-			Map<String, String> env = System.getenv();
-			if(Boolean.valueOf(env.get("LOW_MEMORY"))) {
-				LOGGER.info("Using Graphhopper for mobile due to LOW_MEMORY env.");
-				hopper = new GraphHopper().forMobile();
-				hopper.setCHPrepareThreads(1);
-			} else {
-				hopper = new GraphHopper().forServer();
-			}
-			hopper.setOSMFile(osmFile);
-			hopper.setGraphHopperLocation(ghCacheLocation);
-			hopper.setEncodingManager(new EncodingManager("car"));
-			hopper.importOrLoad();
+			hopper = GraphHopperBuilder.get(osmFile, ghCacheLocation);
 		}
 	}
 	

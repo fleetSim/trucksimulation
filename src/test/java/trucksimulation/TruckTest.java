@@ -3,24 +3,34 @@ package trucksimulation;
 import java.io.File;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.graphhopper.GraphHopper;
+
+import trucksimulation.routing.GraphHopperBuilder;
 import trucksimulation.routing.Position;
 import trucksimulation.routing.Route;
 import trucksimulation.trucks.DestinationArrivedException;
 import trucksimulation.trucks.Truck;
 
 public class TruckTest {
-
-	@Test
-	public void testMovement() throws InterruptedException {
+	
+	private static GraphHopper hopper;
+	
+	@BeforeClass
+	public static void initGraphHopper() {
 		// use different graphhopper cache directory to avoid conflicts
 		String userHome = System.getProperty("user.home");
 		String ghCacheLocation = new File(userHome, ".graphhopper-test").getAbsolutePath();
-		
+		String osmFile = new File("osm", "andorra-latest.osm.pbf").toString();
+		hopper = GraphHopperBuilder.get(osmFile, ghCacheLocation);
+	}
+
+	@Test
+	public void testMovement() throws InterruptedException {	
 		Truck t1 = Truck.buildTruck();
-		Route r = Route.getRoute(new File("osm", "andorra-latest.osm.pbf").toString(), ghCacheLocation,
-				new Position(42.450656, 1.485264), new Position(42.541762, 1.457115));
+		Route r = Route.getRoute(hopper, new Position(42.450656, 1.485264), new Position(42.541762, 1.457115));
 		t1.setRoute(r);
 		
 		long journeyTime = 0;
@@ -40,12 +50,8 @@ public class TruckTest {
 	
 	@Test
 	public void testPauseMode() {
-		String userHome = System.getProperty("user.home");
-		String ghCacheLocation = new File(userHome, ".graphhopper-test").getAbsolutePath();
-		
 		Truck t1 = Truck.buildTruck();
-		Route r = Route.getRoute(new File("osm", "andorra-latest.osm.pbf").toString(), ghCacheLocation,
-				new Position(42.541762, 1.457115), new Position(42.450656, 1.485264));
+		Route r = Route.getRoute(hopper, new Position(42.541762, 1.457115), new Position(42.450656, 1.485264));
 		t1.setRoute(r);
 		Assert.assertFalse(t1.isInPauseMode());
 		t1.move();

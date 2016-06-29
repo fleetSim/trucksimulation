@@ -31,21 +31,8 @@ public class Route {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(Route.class);
 		
-	public static Route getRoute(String osmPath, Position start, Position destination) {
-		Route r = new Route(start, destination, osmPath);
-		r.init();
-		return r;
-	}
-	
 	public static Route getRoute(GraphHopper hopper, Position start, Position destination) {
 		Route r = new Route(start, destination, hopper);
-		r.init();
-		return r;
-	}
-	
-	public static Route getRoute(String osmPath, String cacheDir, Position start, Position destination) {
-		Route r = new Route(start, destination, osmPath);
-		r.setGhCacheLocation(cacheDir);
 		r.init();
 		return r;
 	}
@@ -53,13 +40,6 @@ public class Route {
 	public Route() {
 		String userHome = System.getProperty("user.home");
 		ghCacheLocation = new File(userHome, ".graphhopper").getAbsolutePath();
-	}
-	
-	private Route(Position start, Position goal, String osmPath) {
-		this();
-		this.start = start;
-		this.goal = goal;
-		this.osmPath = osmPath;
 	}
 	
 	private Route(Position start, Position dest, GraphHopper hopper) {
