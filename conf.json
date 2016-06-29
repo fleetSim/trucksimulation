@@ -11,7 +11,7 @@
 		"db_name": "trucksimulation"
 	},
 	"amqp": {
-		"enabled": true,
+		"enabled": false,
 		"uri": "amqp://localhost"
 	}
 }

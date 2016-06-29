@@ -15,10 +15,10 @@ public class StarterVerticle extends AbstractVerticle {
 	@Override
 	public void start() {
 
-		DeploymentOptions routeMgrOptions = new DeploymentOptions().setWorker(true).setConfig(config());
+		DeploymentOptions routeMgrOptions = new DeploymentOptions().setWorker(true).setInstances(2).setConfig(config());
 		DeploymentOptions deplOptions = new DeploymentOptions().setConfig(config());
 
-		vertx.deployVerticle(new RouteCalculationVerticle(), routeMgrOptions, w -> {
+		vertx.deployVerticle(RouteCalculationVerticle.class.getName(), routeMgrOptions, w -> {
 			if (w.failed()) {
 				LOGGER.error("Deployment of RouteManager failed.", w.cause());
 			}

@@ -27,11 +27,18 @@ public class Route {
 	private transient PathWrapper pathWrapper;
 	private transient String osmPath;
 	private transient String ghCacheLocation;
+	private transient GraphHopper hopper;
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(Route.class);
 		
 	public static Route getRoute(String osmPath, Position start, Position destination) {
 		Route r = new Route(start, destination, osmPath);
+		r.init();
+		return r;
+	}
+	
+	public static Route getRoute(GraphHopper hopper, Position start, Position destination) {
+		Route r = new Route(start, destination, hopper);
 		r.init();
 		return r;
 	}
@@ -55,15 +62,21 @@ public class Route {
 		this.osmPath = osmPath;
 	}
 	
+	private Route(Position start, Position dest, GraphHopper hopper) {
+		this();
+		this.start = start;
+		this.goal = dest;
+		this.hopper = hopper;
+	}
+	
 	private void init() {
 		calcRoute();
 		loadRouteFromWrapper();
 	}
 	
-	private void calcRoute() {
+	private void loadGraphHopper() {
 		// create one GraphHopper instance
 		Map<String, String> env = System.getenv();
-		GraphHopper hopper;
 		if(Boolean.valueOf(env.get("LOW_MEMORY"))) {
 			LOGGER.info("Using Graphhopper for mobile due to LOW_MEMORY env.");
 			hopper = new GraphHopper().forMobile();
@@ -75,7 +88,12 @@ public class Route {
 		hopper.setGraphHopperLocation(ghCacheLocation);
 		hopper.setEncodingManager(new EncodingManager("car"));
 		hopper.importOrLoad();
-
+	}
+	
+	private void calcRoute() {
+		if(hopper == null) {
+			loadGraphHopper();
+		}
 		// simple configuration of the request object, see the GraphHopperServlet classs for more possibilities.
 		GHRequest req = new GHRequest(start.getLat(), start.getLon(), goal.getLat(), goal.getLon()).
 		    setWeighting("fastest").

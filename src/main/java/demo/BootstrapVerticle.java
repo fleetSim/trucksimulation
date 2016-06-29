@@ -32,11 +32,13 @@ public class BootstrapVerticle extends AbstractVerticle {
 	
 	@Override
 	public void start() throws Exception {
-		DeploymentOptions routeMgrOptions = new DeploymentOptions().setWorker(true).setConfig(config());
+		int cores = Runtime.getRuntime().availableProcessors();
+		LOGGER.info("Deploying {0} RouteCalculationVerticles", cores - 1);
+		DeploymentOptions routeMgrOptions = new DeploymentOptions().setWorker(true).setInstances(cores - 1).setConfig(config());
 		
 		mongo = MongoClient.createShared(vertx, config().getJsonObject("mongodb", new JsonObject()));
 		
-		vertx.deployVerticle(new RouteCalculationVerticle(), routeMgrOptions, w -> {
+		vertx.deployVerticle(RouteCalculationVerticle.class.getName(), routeMgrOptions, w -> {
 			if (w.failed()) {
 				LOGGER.error("Deployment of RouteManager failed." + w.cause());
 			} else {
@@ -101,13 +103,16 @@ public class BootstrapVerticle extends AbstractVerticle {
 		Position hamburg = new Position(53.551085, 9.993682);
 		Position munich = new Position(48.135125, 11.581981);
 		
-		mongo.insert("simulations", new JsonObject().put("_id", "demo").put("description", "small demo simulation"), sim -> {
-			createSimulationData(berlin, factoryStuttgart, "demo");
-			createSimulationData(hamburg, factoryStuttgart, "demo");
-			createSimulationData(munich, factoryStuttgart, "demo");
+		mongo.insert("simulations", new JsonObject().put("_id", "demo").put("description", "small demo simulation with traffic incidents"), sim -> {
+			createSimulationData(berlin, factoryStuttgart, "demo", true);
+			createSimulationData(hamburg, factoryStuttgart, "demo", true);
+			createSimulationData(munich, factoryStuttgart, "demo", true);
 		});
 		
-		mongo.insert("simulations", new JsonObject().put("_id", "demoBig").put("description", "large demo simulation"), h -> {
+		JsonObject demoBig = new JsonObject().put("_id", "demoBig")
+				.put("description", "large demo simulation in endless mode without traffic incidents")
+				.put("endless", true);
+		mongo.insert("simulations", demoBig, h -> {
 			createRandomSimulationData("demoBig");
 		});
 	}
@@ -120,14 +125,20 @@ public class BootstrapVerticle extends AbstractVerticle {
 	 */
 	private void createRandomSimulationData(String simId) {
 		
-		vertx.eventBus().send(Bus.CITY_SAMPLE.address(), new JsonObject().put("size", 100), (AsyncResult<Message<JsonArray>> res) -> {
+		vertx.eventBus().send(Bus.CITY_SAMPLE.address(), new JsonObject().put("size", 2000), (AsyncResult<Message<JsonArray>> res) -> {
 			JsonArray cities = res.result().body();
 			for(int i = 0; i + 1 < cities.size(); i += 2) {
+				final int requestNo = i/2+1;
 				JsonArray startPos = ((JsonObject) cities.getJsonObject(i)).getJsonObject("pos").getJsonArray("coordinates");
 				JsonArray destPos = ((JsonObject) cities.getJsonObject(i+1)).getJsonObject("pos").getJsonArray("coordinates");
 				Position start = new Position(startPos.getDouble(1), startPos.getDouble(0));
 				Position dest = new Position(destPos.getDouble(1), destPos.getDouble(0));
-				createSimulationData(start, dest, simId);
+				
+				vertx.setTimer(1+i*200, h -> { // throttle to avoid timeouts due to large queue of pending requests
+					LOGGER.info("Creating new simulation data {0} of {1}", requestNo, cities.size()/2);
+					createSimulationData(start, dest, simId, false);
+				});
+
 			}
 		});
 
@@ -137,7 +148,7 @@ public class BootstrapVerticle extends AbstractVerticle {
 	
 	/**
 	 */
-	private void createSimulationData(Position start, Position dest, String simId) {
+	private void createSimulationData(Position start, Position dest, String simId, boolean createTrafficIncidents) {
 		Gson gson = Serializer.get();		
 		String to = gson.toJson(dest);
 		String from = gson.toJson(start);
@@ -159,14 +170,15 @@ public class BootstrapVerticle extends AbstractVerticle {
 							LOGGER.info("created truck " + t.result());
 						});
 						
-						List<JsonObject> incidents = incidentsOnRoute(route, 3);
-						for(JsonObject incident : incidents) {
-							incident.put("simulation", simId);
-							mongo.insert("traffic", incident, t -> {
-								LOGGER.info("created traffic incident " + t.result());
-							});
+						if(createTrafficIncidents) {
+							List<JsonObject> incidents = incidentsOnRoute(route, 3);
+							for(JsonObject incident : incidents) {
+								incident.put("simulation", simId);
+								mongo.insert("traffic", incident, t -> {
+									LOGGER.info("created traffic incident " + t.result());
+								});
+							}	
 						}
-
 					} else {
 						LOGGER.error("Route insertion failed: ", res.cause());
 					}
