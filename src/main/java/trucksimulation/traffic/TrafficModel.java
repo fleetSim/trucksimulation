@@ -34,9 +34,16 @@ public class TrafficModel {
 		this.endPoint = incident.getEnd();
 		this.speed = incident.getSpeed();
 		this.lastModified = LocalDateTime.now(ZoneOffset.UTC);
-		this.startTime = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(10);
-		this.endTime = LocalDateTime.now(ZoneOffset.UTC).plusMinutes(60);
-		this.reported = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(10);
+		if(incident.isActive()) {
+			this.setReported(LocalDateTime.now(ZoneOffset.UTC).minusMinutes(10));
+			this.startTime = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(10);
+			this.endTime = LocalDateTime.now(ZoneOffset.UTC).plusMinutes(60);
+		} else {
+			this.setReported(LocalDateTime.now(ZoneOffset.UTC).minusMinutes(60));
+			this.startTime = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(60);
+			this.endTime = LocalDateTime.now(ZoneOffset.UTC).plusMinutes(10);
+		}
+		
 	}
 	
 	public long getIncidentId() {
@@ -82,6 +89,14 @@ public class TrafficModel {
 
 	public void setLastModified(LocalDateTime lastModified) {
 		this.lastModified = lastModified;
+	}
+
+	public LocalDateTime getReported() {
+		return reported;
+	}
+
+	public void setReported(LocalDateTime reported) {
+		this.reported = reported;
 	}
 
 	public LocalDateTime getStartTime() {

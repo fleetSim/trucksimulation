@@ -7,8 +7,22 @@ public class TrafficIncident {
 	private Position end;
 	private double direction;
 	private double speed = 1.0;
+	private boolean active;
+	private boolean reported;
 	
 	
+	public boolean isActive() {
+		return active;
+	}
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+	public boolean isReported() {
+		return reported;
+	}
+	public void setReported(boolean reported) {
+		this.reported = reported;
+	}
 	public Position getStart() {
 		return start;
 	}
