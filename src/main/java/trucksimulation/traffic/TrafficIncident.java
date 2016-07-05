@@ -7,8 +7,8 @@ public class TrafficIncident {
 	private Position end;
 	private double direction;
 	private double speed = 1.0;
-	private boolean active;
-	private boolean reported;
+	private boolean active = true;
+	private boolean reported = true;
 	
 	
 	public boolean isActive() {

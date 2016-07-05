@@ -139,7 +139,7 @@ public class SimulationControllerVerticle extends AbstractVerticle {
 	 */
 	private void loadTrafficIncidents(String simId) {
 		Gson gson = Serializer.get();
-		JsonObject query = new JsonObject().put("simulation", simId);
+		JsonObject query = new JsonObject().put("simulation", simId).put("active", true);
 		Simulation simulation = simulations.get(simId);
 
 		mongo.find("traffic", query, trafficResult -> {

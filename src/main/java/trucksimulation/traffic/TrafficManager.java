@@ -33,7 +33,7 @@ public class TrafficManager {
 	
 	
 	/**
-	 * Responds with traffic models that are closest to a given position.
+	 * Responds with reported traffic incident models that are closest to a given position.
 	 * The query position must be passed in as http query parameter.
 	 * 
 	 * @see TrafficQueryParams 
@@ -41,7 +41,7 @@ public class TrafficManager {
 	 * @param ctx
 	 */
 	public void getNearByTrafficModels(RoutingContext ctx) {
-		JsonObject query = new JsonObject().put("simulation", ctx.request().getParam("simId"));
+		JsonObject query = new JsonObject().put("simulation", ctx.request().getParam("simId")).put("reported", true);
 		TrafficQueryParams params;
 		
 		try {
