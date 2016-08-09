@@ -28,7 +28,10 @@ import trucksimulation.routing.RouteCalculationVerticle;
  */
 public class BootstrapVerticle extends AbstractVerticle {
 	
-	private static final int CITY_SAMPLE_SIZE = 200;
+	private static final int MIN_GAP_BETWEEN_INCIDENTS = 5000;
+	private static final int MAX_TRAFFIC_LENGTH = 5000;
+	private static final int MIN_TRAFFIC_LENGTH = 1000;
+	private static final int CITY_SAMPLE_SIZE = 2000;
 	private MongoClient mongo;
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimulationControllerVerticle.class);
 	
@@ -209,7 +212,7 @@ public class BootstrapVerticle extends AbstractVerticle {
 		for(Object geo : geometries) {
 			JsonObject geometry = (JsonObject) geo;
 			
-			if(geometry.getDouble("distance") > 1000 && geometry.getDouble("distance") < 5000 && incidents.size() < max && gapBetweenIncidents > 5000) {
+			if(geometry.getDouble("distance") > MIN_TRAFFIC_LENGTH && geometry.getDouble("distance") < MAX_TRAFFIC_LENGTH && incidents.size() < max && gapBetweenIncidents > MIN_GAP_BETWEEN_INCIDENTS) {
 				JsonArray coordinates = geometry.getJsonArray("coordinates");
 				startCoord = coordinates.getJsonArray(0);
 				endCoord = coordinates.getJsonArray(coordinates.size() - 1);
