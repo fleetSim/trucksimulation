@@ -11,8 +11,6 @@ import io.vertx.core.json.JsonObject;
 
 public class Bootstrapper {
 	
-		
-
 	public static void main(String[] args) throws IOException, InterruptedException {
 		JsonObject conf = readConf();
 		bootstrapCities(conf);
