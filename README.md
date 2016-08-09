@@ -27,16 +27,21 @@ incident document.
 - Java 8
 - maven >= 3.3
 
-Import the fixtures with the `mongoimport` tool.
-The cities collection is required to geenrate sample data and to determine random destinations in *endless* mode.
-
-``mongoimport -d trucksimulation -c cities fixtures/DE/citiesde.json`
 
 ### Generating Sample Data
+
 Initially you can run `mvn compile exec:java@bootstrap` to load a demo simulation
-into the datastore and to index the collections in mongodb.
+into the datastore and to index the collections in mongodb. The bootstrap task uses the mongo
+settings which are present in the `conf.json` file.
+
+This also imports the cities collection from a json dump via 
+`mongoimport -d trucksimulation -c cities fixtures/DE/citiesde.json`.
+The cities collection is required to generate sample data and to determine random destinations
+in *endless* mode.
+
 
 ### Configuration
+
 The main configuration is a json file. It can be specified when running the application 
 with the `-conf conf.json` option.
 
@@ -65,6 +70,8 @@ An exemplary configuration file might look like this:
 Make sure that the osmFile exists, downloads are e.g. provided 
 by [download.geofabrik.de](http://download.geofabrik.de). The internally used GraphHopper library needs
 to process the provided OSM file when first calculating a route. This may take some time initially.
+
+
 
 ## Usage
 
@@ -141,6 +148,7 @@ and to stop it:
 #### Eventbus
 The simulation uses vert.x 3 and sends messages via the vert.x eventbus.
 Run the simulation server and an adapter verticle in the same cluster to receive those messages.
+Bus addresses are listed in the `trucksimulation.Bus` enum.
 
 #### Receiving HTTP requests
 HTTP Post reuests will be sent to the `receiverUrl` specified in the configuration file.
@@ -167,6 +175,6 @@ Speed is provided as m/s, accuracy is in meters and the timestamp is in millisec
 
 
 #### SockJS
-Events are emitted using the vert.x sockjs bridge.  
+Events are emitted using the vert.x sockjs bridge.
 Clients can connect using the [vertx3-eventbus-client](https://www.npmjs.com/package/vertx3-eventbus-client)
 
