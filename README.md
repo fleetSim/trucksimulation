@@ -145,6 +145,11 @@ and to stop it:
 
 ### Receiving simulated telematics data
 
+#### Message Format
+Messages are provided in JSON format and originate from the simulated telematics boxes.
+GSON adapters are used for serialization. Consult the `trucksimulation.Serializer` class to
+see which adapters are in use.
+
 #### Eventbus
 The simulation uses vert.x 3 and sends messages via the vert.x eventbus.
 Run the simulation server and an adapter verticle in the same cluster to receive those messages.
