@@ -19,6 +19,9 @@ import trucksimulation.routing.Route;
 import trucksimulation.traffic.TrafficIncident;
 import trucksimulation.trucks.Truck;
 
+/**
+ * Verticle for initializing, starting and stopping simulations.
+ */
 public class SimulationControllerVerticle extends AbstractVerticle {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimulationControllerVerticle.class);
