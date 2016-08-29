@@ -31,7 +31,7 @@ public class BootstrapVerticle extends AbstractVerticle {
 	private static final int MIN_GAP_BETWEEN_INCIDENTS = 5000;
 	private static final int MAX_TRAFFIC_LENGTH = 5000;
 	private static final int MIN_TRAFFIC_LENGTH = 1000;
-	private static final int CITY_SAMPLE_SIZE = 2000;
+	private static final int CITY_SAMPLE_SIZE = 1000;
 	private MongoClient mongo;
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimulationControllerVerticle.class);
 	

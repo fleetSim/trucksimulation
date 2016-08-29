@@ -78,7 +78,7 @@ Port on which the management API will be listening for HTTP requests.
 #### simulation.osmFile
 
 OSM file to be used. Note that the OSM region must match the cities collection that is being used.
-If the cities dump for germany is used, then the OSM file should cover the Germany region.
+If the cities dump for Germany is used, then the OSM file should cover the Germany region.
 
 #### simulation.msgInterval
 

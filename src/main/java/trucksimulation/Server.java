@@ -13,7 +13,6 @@ import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import trucksimulation.traffic.TrafficManager;
-import trucksimulation.trucks.Truck;
 
 public class Server extends AbstractVerticle {
 	
@@ -45,7 +44,7 @@ public class Server extends AbstractVerticle {
 		TrafficManager trafficMgr = new TrafficManager(mongo);
 		
 		// regex caputes simId
-		router.routeWithRegex("/api/v1/simulations\\/([^\\/]+)\\/(.*)").handler(this::provideSimulationContext);
+		router.routeWithRegex("/api/v1/simulations\\/([^\\/]+)(\\/)?(.*)").handler(this::provideSimulationContext);
 		router.get("/api/v1/simulations/:simId/routes/:routeId").handler(this::getRoute);
 		router.get("/api/v1/simulations/:simId/routes").handler(this::getRoutes);
 		router.get("/api/v1/simulations/:simId/trucks/:truckId").handler(this::getTruck);
