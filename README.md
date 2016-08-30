@@ -27,16 +27,21 @@ incident document.
 - Java 8
 - maven >= 3.3
 
-Import the fixtures with the `mongoimport` tool.
-The cities collection is required to geenrate sample data and to determine random destinations in *endless* mode.
-
-``mongoimport -d trucksimulation -c cities fixtures/DE/citiesde.json`
 
 ### Generating Sample Data
+
 Initially you can run `mvn compile exec:java@bootstrap` to load a demo simulation
-into the datastore and to index the collections in mongodb.
+into the datastore and to index the collections in mongodb. The bootstrap task uses the mongo
+settings which are present in the `conf.json` file.
+
+This also imports the cities collection from a json dump via 
+`mongoimport -d trucksimulation -c cities fixtures/DE/citiesde.json`.
+The cities collection is required to generate sample data and to determine random destinations
+in *endless* mode.
+
 
 ### Configuration
+
 The main configuration is a json file. It can be specified when running the application 
 with the `-conf conf.json` option.
 
@@ -48,9 +53,9 @@ An exemplary configuration file might look like this:
 	"simulation": {
 		"osmFile": "osm/germany-latest.osm.pbf",
 		"msgInterval": 10,
+		"interval_ms": 1000,
 		"receiverUrl": "http://localhost:8081/telematics/fleetsim",
-		"postData": true,
-		"interval_ms": 1000
+		"postData": true
 	},
 	"mongodb": {
 		"db_name": "trucksimulation"
@@ -65,6 +70,45 @@ An exemplary configuration file might look like this:
 Make sure that the osmFile exists, downloads are e.g. provided 
 by [download.geofabrik.de](http://download.geofabrik.de). The internally used GraphHopper library needs
 to process the provided OSM file when first calculating a route. This may take some time initially.
+
+#### port
+
+Port on which the management API will be listening for HTTP requests.
+
+#### simulation.osmFile
+
+OSM file to be used. Note that the OSM region must match the cities collection that is being used.
+If the cities dump for Germany is used, then the OSM file should cover the Germany region.
+
+#### simulation.msgInterval
+
+The message interval in seconds is the interval in which telematics boxes emit messages.
+
+#### simulation.interval_ms
+
+The simulation interval controls the simulation speed. If set to 1000, then one second in the 
+simulation equals one *real* second.
+The simulation will run twice as fast when the interval is set to 500ms.
+
+#### simulation.receiverUrl
+
+URL to which box messages should be posted.
+HTTP POST requests are only sent if `simulation.postData` is set to `true`.
+
+#### mongodb
+
+See http://vertx.io/docs/vertx-mongo-client/java/#_configuring_the_client
+
+#### amqp.uri
+
+Connection string for the AMQP client.
+
+#### amqp.enabled
+
+The AMQP client will only submit messages if this is set to true.
+
+
+
 
 ## Usage
 
@@ -138,9 +182,15 @@ and to stop it:
 
 ### Receiving simulated telematics data
 
+#### Message Format
+Messages are provided in JSON format and originate from the simulated telematics boxes.
+GSON adapters are used for serialization. Consult the `trucksimulation.Serializer` class to
+see which adapters are in use.
+
 #### Eventbus
 The simulation uses vert.x 3 and sends messages via the vert.x eventbus.
 Run the simulation server and an adapter verticle in the same cluster to receive those messages.
+Bus addresses are listed in the `trucksimulation.Bus` enum.
 
 #### Receiving HTTP requests
 HTTP Post reuests will be sent to the `receiverUrl` specified in the configuration file.
@@ -167,6 +217,6 @@ Speed is provided as m/s, accuracy is in meters and the timestamp is in millisec
 
 
 #### SockJS
-Events are emitted using the vert.x sockjs bridge.  
+Events are emitted using the vert.x sockjs bridge.
 Clients can connect using the [vertx3-eventbus-client](https://www.npmjs.com/package/vertx3-eventbus-client)
 

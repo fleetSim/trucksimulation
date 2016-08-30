@@ -13,10 +13,12 @@ import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import trucksimulation.traffic.TrafficManager;
-import trucksimulation.trucks.Truck;
 
 public class Server extends AbstractVerticle {
 	
+	private static final String SIMULATIONS_COLLECTION = "simulations";
+	private static final String TRUCKS_COLLECTION = "trucks";
+	private static final String ROUTES_COLLECTION = "routes";
 	private MongoClient mongo;
 	private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
@@ -59,7 +61,7 @@ public class Server extends AbstractVerticle {
 	
 	private void provideSimulationContext(RoutingContext ctx) {
 		JsonObject query = new JsonObject().put("_id", ctx.request().getParam("param0"));
-		mongo.findOne("simulations", query, new JsonObject(), res -> {
+		mongo.findOne(SIMULATIONS_COLLECTION, query, new JsonObject(), res -> {
 			if(res.failed()) {
 				ctx.fail(res.cause());
 			} else if(res.result() == null) {
@@ -72,7 +74,7 @@ public class Server extends AbstractVerticle {
 	}
 	
 	private void getSimulations(RoutingContext ctx) {
-		mongo.find("simulations", new JsonObject(), res -> {
+		mongo.find(SIMULATIONS_COLLECTION, new JsonObject(), res -> {
 			if(res.failed()) {
 				ctx.fail(res.cause());
 			} else {
@@ -119,7 +121,7 @@ public class Server extends AbstractVerticle {
 	
 	private void getTrucks(RoutingContext ctx) {
 		JsonObject query = new JsonObject().put("simulation", ctx.request().getParam("simId"));
-		mongo.find("trucks", query, res -> {
+		mongo.find(TRUCKS_COLLECTION, query, res -> {
 			if(res.failed()) {
 				ctx.fail(res.cause());
 			} else {
@@ -131,7 +133,7 @@ public class Server extends AbstractVerticle {
 	private void getTruck(RoutingContext ctx) {
 		JsonObject query = new JsonObject().put("simulation", ctx.request().getParam("simId"));
 		query.put("_id", ctx.request().getParam("truckId"));
-		mongo.findOne("trucks", query, new JsonObject(), res -> {
+		mongo.findOne(TRUCKS_COLLECTION, query, new JsonObject(), res -> {
 			if(res.failed()) {
 				ctx.fail(res.cause());
 			} else if (res.result() == null){
@@ -147,7 +149,7 @@ public class Server extends AbstractVerticle {
 		JsonObject query = new JsonObject().put("simulation", ctx.request().getParam("simId"));
 		FindOptions options = new FindOptions();
 		options.setFields(new JsonObject().put("segments", false));
-		mongo.findWithOptions("routes", query, options, res -> {
+		mongo.findWithOptions(ROUTES_COLLECTION, query, options, res -> {
 			if(res.failed()) {
 				ctx.fail(res.cause());
 			} else {
@@ -160,7 +162,7 @@ public class Server extends AbstractVerticle {
 		JsonObject query = new JsonObject() //
 				.put("_id", ctx.request().getParam("routeId")) //
 				.put("simulation", ctx.request().getParam("simId"));
-		mongo.findOne("routes", query, new JsonObject(), res -> {
+		mongo.findOne(ROUTES_COLLECTION, query, new JsonObject(), res -> {
 			if(res.failed()) {
 				ctx.fail(res.cause());
 			} else if (res.result() == null) {

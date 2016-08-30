@@ -19,44 +19,48 @@ import trucksimulation.routing.Route;
 import trucksimulation.traffic.TrafficIncident;
 import trucksimulation.trucks.Truck;
 
+/**
+ * Verticle for initializing, starting and stopping simulations.
+ */
 public class SimulationControllerVerticle extends AbstractVerticle {
-	
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimulationControllerVerticle.class);
 	private MongoClient mongo;
 	private int intervalMS;
 	private int msgInterval;
 	/**
-	 * Maps simulation id's to the running state of the simulation (true when running).
+	 * Maps simulation id's to the running state of the simulation (true when
+	 * running).
 	 */
 	private LocalMap<String, Boolean> simulationStatus;
-	
+
 	private HashMap<String, Simulation> simulations = new HashMap<String, Simulation>();
-	
+
 	@Override
 	public void start() throws Exception {
 		mongo = MongoClient.createShared(vertx, config().getJsonObject("mongodb", new JsonObject()));
 		intervalMS = config().getJsonObject("simulation", new JsonObject()).getInteger("interval_ms", 1000);
 		msgInterval = config().getJsonObject("simulation", new JsonObject()).getInteger("msgInterval", 1);
-		
+
 		SharedData sd = vertx.sharedData();
 		simulationStatus = sd.getLocalMap("simStatusMap");
-		
+
 		vertx.eventBus().consumer(Bus.START_SIMULATION.address(), this::startSimulation);
 		vertx.eventBus().consumer(Bus.STOP_SIMULATION.address(), this::stopSimulation);
 		vertx.eventBus().consumer(Bus.SIMULATION_STATUS.address(), this::getSimulationStatus);
 		vertx.eventBus().consumer(Bus.SIMULATION_ENDED.address(), this::handleSimulationEnded);
-	}	
-	
-	
+	}
+
 	/**
-	 * Loads all trucks from the db which belong to this simulation and starts moving them
-	 * as soon as their corresponding routes are loaded.
+	 * Loads all trucks from the db which belong to this simulation and starts
+	 * moving them as soon as their corresponding routes are loaded.
+	 * 
 	 * @param msg
 	 */
 	private void startSimulation(Message<JsonObject> msg) {
 		JsonObject simulationJson = msg.body();
 		String simId = simulationJson.getString("_id");
-		if(isSimulationRunning(simId)) {
+		if (isSimulationRunning(simId)) {
 			msg.fail(400, "Simulation is already running.");
 			return;
 		}
@@ -65,16 +69,16 @@ public class SimulationControllerVerticle extends AbstractVerticle {
 		simulation.setPublishInterval(msgInterval);
 		simulation.setEndlessMode(simulationJson.getBoolean("endless", false));
 		simulations.put(simId, simulation);
-		
+
 		JsonObject trucksQuery = new JsonObject().put("simulation", simId);
 		mongo.find("trucks", trucksQuery, res -> {
-			if(res.failed()) {
+			if (res.failed()) {
 				msg.fail(500, res.cause().getMessage());
 			} else {
 				msg.reply("ok");
 				setRunningStatus(simId, true);
 				simulations.get(simId).setTruckCount(res.result().size());
-				for(JsonObject truckJson : res.result()) {
+				for (JsonObject truckJson : res.result()) {
 					Truck truck = new Truck(truckJson.getString("_id"));
 					truck.setRouteId(truckJson.getString("route"));
 					simulation.addTruck(truck);
@@ -85,15 +89,18 @@ public class SimulationControllerVerticle extends AbstractVerticle {
 			}
 		});
 	}
-	
+
 	/**
-	 * Stops the simulation if it is running in this verticle and updates the running status in the shared status map {@link #simulationStatus}.
+	 * Stops the simulation if it is running in this verticle and updates the
+	 * running status in the shared status map {@link #simulationStatus}.
 	 * 
-	 * @param msg a JsonObject with an "_id" field containing the id string fo the simulation.
+	 * @param msg
+	 *            a JsonObject with an "_id" field containing the id string fo
+	 *            the simulation.
 	 */
 	private void stopSimulation(Message<JsonObject> msg) {
 		String simId = msg.body().getString("_id");
-		if(simulations.containsKey(simId)) {
+		if (simulations.containsKey(simId)) {
 			LOGGER.info("simulation `{0}` is being stopped in verticle {1}", simId, this.deploymentID());
 			Simulation simulation = simulations.get(simId);
 			simulation.stop();
@@ -101,21 +108,21 @@ public class SimulationControllerVerticle extends AbstractVerticle {
 			setRunningStatus(simId, false);
 		}
 	}
-	
+
 	private void getSimulationStatus(Message<String> msg) {
 		String simId = msg.body();
 		msg.reply(isSimulationRunning(simId));
 	}
-	
+
 	private void handleSimulationEnded(Message<JsonObject> msg) {
 		String simId = msg.body().getString("id");
 		simulations.remove(simId);
 		setRunningStatus(simId, false);
 	}
 
-
 	/**
-	 * Resolves reference to the truck's route and assigns route objects to the truck.
+	 * Resolves reference to the truck's route and assigns route objects to the
+	 * truck.
 	 * 
 	 * @param simId
 	 * @param truck
@@ -123,19 +130,19 @@ public class SimulationControllerVerticle extends AbstractVerticle {
 	private void assignRoute(String simulationId, Truck truck) {
 		Gson gson = Serializer.get();
 		JsonObject routeQuery = new JsonObject().put("_id", truck.getRouteId());
-		
+
 		mongo.findOne("routes", routeQuery, new JsonObject(), r -> {
 			Route route = gson.fromJson(r.result().toString(), Route.class);
 			simulations.get(simulationId).addRoute(truck.getRouteId(), route);
 		});
 	}
-	
-	
+
 	/**
-	 * Loads all traffic incidents which belong to the simulation and assigns incidents to
-	 * trucks which are affected by those incidents.
+	 * Loads all traffic incidents which belong to the simulation and assigns
+	 * incidents to trucks which are affected by those incidents.
 	 * 
-	 * @param simId the simulation id
+	 * @param simId
+	 *            the simulation id
 	 */
 	private void loadTrafficIncidents(String simId) {
 		Gson gson = Serializer.get();
@@ -163,15 +170,16 @@ public class SimulationControllerVerticle extends AbstractVerticle {
 			}
 		});
 	}
-	
+
 	private JsonObject buildIntersectionQuery(JsonObject traffic, String simId) {
 		JsonObject startGeometry = new JsonObject().put("$geometry", traffic.getJsonObject("start"));
 		JsonObject endGeometry = new JsonObject().put("$geometry", traffic.getJsonObject("end"));
-		JsonObject intersectsStartAndEnd = new JsonObject().put("$geoIntersects", startGeometry).put("$geoIntersects", endGeometry);
+		JsonObject intersectsStartAndEnd = new JsonObject().put("$geoIntersects", startGeometry).put("$geoIntersects",
+				endGeometry);
 		JsonObject query = new JsonObject().put("segments", intersectsStartAndEnd).put("simulation", simId);
 		return query;
 	}
-	
+
 	/**
 	 * Sets the status of the simulation so that all local verticles can see it.
 	 * 
@@ -181,11 +189,10 @@ public class SimulationControllerVerticle extends AbstractVerticle {
 	private void setRunningStatus(String simulationId, boolean status) {
 		simulationStatus.put(simulationId, status);
 	}
-	
+
 	private boolean isSimulationRunning(String simulationId) {
 		Boolean isRunning = simulationStatus.get(simulationId);
 		return isRunning != null && isRunning.booleanValue() == true;
-	}	
+	}
 
-	
 }

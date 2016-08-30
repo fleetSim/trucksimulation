@@ -129,7 +129,7 @@
 							<goal>java</goal>
 						</goals>
 						<configuration>
-							<mainClass>io.vertx.core.Launcher</mainClass>
+							<mainClass>demo.Bootstrapper</mainClass>
 							<arguments>
 								<argument>run</argument>
 								<argument>${bootstrap.verticle}</argument>

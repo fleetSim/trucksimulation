@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -27,6 +28,10 @@ import trucksimulation.routing.RouteCalculationVerticle;
  */
 public class BootstrapVerticle extends AbstractVerticle {
 	
+	private static final int MIN_GAP_BETWEEN_INCIDENTS = 5000;
+	private static final int MAX_TRAFFIC_LENGTH = 5000;
+	private static final int MIN_TRAFFIC_LENGTH = 1000;
+	private static final int CITY_SAMPLE_SIZE = 1000;
 	private MongoClient mongo;
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimulationControllerVerticle.class);
 	
@@ -104,9 +109,9 @@ public class BootstrapVerticle extends AbstractVerticle {
 		Position munich = new Position(48.135125, 11.581981);
 		
 		mongo.insert("simulations", new JsonObject().put("_id", "demo").put("description", "small demo simulation with traffic incidents"), sim -> {
-			createSimulationData(berlin, factoryStuttgart, "demo", true);
-			createSimulationData(hamburg, factoryStuttgart, "demo", true);
-			createSimulationData(munich, factoryStuttgart, "demo", true);
+			createSimulationData(berlin, factoryStuttgart, "demo", true, null);
+			createSimulationData(hamburg, factoryStuttgart, "demo", true, null);
+			createSimulationData(munich, factoryStuttgart, "demo", true, null);
 		});
 		
 		JsonObject demoBig = new JsonObject().put("_id", "demoBig")
@@ -125,7 +130,7 @@ public class BootstrapVerticle extends AbstractVerticle {
 	 */
 	private void createRandomSimulationData(String simId) {
 		
-		vertx.eventBus().send(Bus.CITY_SAMPLE.address(), new JsonObject().put("size", 2000), (AsyncResult<Message<JsonArray>> res) -> {
+		vertx.eventBus().send(Bus.CITY_SAMPLE.address(), new JsonObject().put("size", CITY_SAMPLE_SIZE), (AsyncResult<Message<JsonArray>> res) -> {
 			JsonArray cities = res.result().body();
 			for(int i = 0; i + 1 < cities.size(); i += 2) {
 				final int requestNo = i/2+1;
@@ -136,7 +141,13 @@ public class BootstrapVerticle extends AbstractVerticle {
 				
 				vertx.setTimer(1+i*200, h -> { // throttle to avoid timeouts due to large queue of pending requests
 					LOGGER.info("Creating new simulation data {0} of {1}", requestNo, cities.size()/2);
-					createSimulationData(start, dest, simId, false);
+					Future<Void> f = Future.future();
+					createSimulationData(start, dest, simId, false, f);
+					if(requestNo == cities.size()/2) {
+						f.setHandler(c -> {
+							vertx.close();
+						});
+					}
 				});
 
 			}
@@ -148,7 +159,7 @@ public class BootstrapVerticle extends AbstractVerticle {
 	
 	/**
 	 */
-	private void createSimulationData(Position start, Position dest, String simId, boolean createTrafficIncidents) {
+	private void createSimulationData(Position start, Position dest, String simId, boolean createTrafficIncidents, Future<Void> f) {
 		Gson gson = Serializer.get();		
 		String to = gson.toJson(dest);
 		String from = gson.toJson(start);
@@ -168,6 +179,7 @@ public class BootstrapVerticle extends AbstractVerticle {
 						truck.put("simulation", simId);
 						mongo.insert("trucks", truck, t -> {
 							LOGGER.info("created truck " + t.result());
+							if(f != null) f.complete();
 						});
 						
 						if(createTrafficIncidents) {
@@ -181,8 +193,11 @@ public class BootstrapVerticle extends AbstractVerticle {
 						}
 					} else {
 						LOGGER.error("Route insertion failed: ", res.cause());
+						if(f != null) f.complete();
 					}
 				});
+			} else {
+				if(f != null) f.complete();
 			}
 		});
 	}
@@ -197,7 +212,7 @@ public class BootstrapVerticle extends AbstractVerticle {
 		for(Object geo : geometries) {
 			JsonObject geometry = (JsonObject) geo;
 			
-			if(geometry.getDouble("distance") > 1000 && geometry.getDouble("distance") < 5000 && incidents.size() < max && gapBetweenIncidents > 5000) {
+			if(geometry.getDouble("distance") > MIN_TRAFFIC_LENGTH && geometry.getDouble("distance") < MAX_TRAFFIC_LENGTH && incidents.size() < max && gapBetweenIncidents > MIN_GAP_BETWEEN_INCIDENTS) {
 				JsonArray coordinates = geometry.getJsonArray("coordinates");
 				startCoord = coordinates.getJsonArray(0);
 				endCoord = coordinates.getJsonArray(coordinates.size() - 1);

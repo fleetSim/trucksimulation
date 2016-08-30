@@ -41,7 +41,10 @@ public class Simulation implements TruckEventListener {
 	private Map<String, HashSet<Truck>> route2trucksMap = new HashMap<>();
 	private List<Truck> trucks = new ArrayList<>();
 	private List<Long> timerIds = new ArrayList<>();
-	private Map<String, Integer> intervalCounters = new HashMap<>();
+	/**
+	 * Mapping of truck ids to interval counts.
+	 */
+	private Map<String, Integer> intervalCount = new HashMap<>();
 	private Map<TrafficIncident, List<String>> incident2RoutesMap = new HashMap<>();
 	private int truckCount;
 	private int incidentCount;
@@ -99,7 +102,7 @@ public class Simulation implements TruckEventListener {
 	 * @return id of the timer, so that it can be cancelled
 	 */
 	private long startMoving(Truck truck) {
-		intervalCounters.put(truck.getId(), 0);
+		intervalCount.put(truck.getId(), 0);
 		long tId = vertx.setPeriodic(intervalMs, timerId -> {
 			try {
 				truck.move();
@@ -172,10 +175,10 @@ public class Simulation implements TruckEventListener {
 		JsonObject correctDataJson = new JsonObject(gson.toJson(correctData)).put("truckId", truck.getId());
 		vertx.eventBus().publish(Bus.BOX_MSG.address(), correctDataJson);
 		
-		int ctr = intervalCounters.get(truck.getId()) + 1;
-		intervalCounters.put(truck.getId(), ctr);
+		int ctr = intervalCount.get(truck.getId()) + 1;
+		intervalCount.put(truck.getId(), ctr);
 		if(ctr % publishInterval == 0) {
-			intervalCounters.put(truck.getId(), 0);
+			intervalCount.put(truck.getId(), 0);
 			TelemetryData inexactData = truck.getTelemetryBoxInexact().getTelemetryData();
 			JsonObject dataJson = new JsonObject(gson.toJson(inexactData)).put("truckId", truck.getId());
 			vertx.eventBus().publish(Bus.BOX_MSG_DETER.address(), dataJson);
@@ -219,7 +222,7 @@ public class Simulation implements TruckEventListener {
 	 * The caller must make sure that the mapping from incident to route is correct as no
 	 * additional checks are performed in the simulation object.</p>
 	 * 
-	 * <p>An assingment to all affected trucks cannot be performed immediately, hence we store 
+	 * <p>An assignment to all affected trucks cannot be performed immediately, hence we store 
 	 * the incident to routes mapping in the {@link #incident2RoutesMap}.
 	 * When all routes have been added, and all incidents have been stored in the map then we can perform
 	 * the actual assignment for incidents to trucks.</p>

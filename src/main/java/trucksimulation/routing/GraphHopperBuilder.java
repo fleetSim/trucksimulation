@@ -1,6 +1,5 @@
 package trucksimulation.routing;
 
-import java.io.File;
 import java.util.Map;
 
 import com.graphhopper.GraphHopper;
