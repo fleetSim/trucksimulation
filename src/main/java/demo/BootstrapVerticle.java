@@ -31,7 +31,7 @@ public class BootstrapVerticle extends AbstractVerticle {
 	private static final int MIN_GAP_BETWEEN_INCIDENTS = 5000;
 	private static final int MAX_TRAFFIC_LENGTH = 5000;
 	private static final int MIN_TRAFFIC_LENGTH = 1000;
-	private static final int CITY_SAMPLE_SIZE = 1000;
+	private static final int CITY_SAMPLE_SIZE = 100;
 	private MongoClient mongo;
 	private static final Logger LOGGER = LoggerFactory.getLogger(SimulationControllerVerticle.class);
 	
@@ -51,6 +51,7 @@ public class BootstrapVerticle extends AbstractVerticle {
 				indexRoutes();
 				indexTraffic();
 				indexTrucks();
+				createLargeDemoSimulation();
 			}
 		});
 			
@@ -104,16 +105,19 @@ public class BootstrapVerticle extends AbstractVerticle {
 	private void createDemoSimulation() {
 		// create a few routes
 		Position factoryStuttgart = new Position(48.772510, 9.165465);
-		Position berlin = new Position(52.413296, 13.421140);
-		Position hamburg = new Position(53.551085, 9.993682);
-		Position munich = new Position(48.135125, 11.581981);
 		
-		mongo.insert("simulations", new JsonObject().put("_id", "demo").put("description", "small demo simulation with traffic incidents"), sim -> {
-			createSimulationData(berlin, factoryStuttgart, "demo", true, null);
-			createSimulationData(hamburg, factoryStuttgart, "demo", true, null);
-			createSimulationData(munich, factoryStuttgart, "demo", true, null);
+		Position iphofen = new Position(49.701562, 10.259233);
+		Position fischbach = new Position(49.088219, 7.711705);
+		Position fridingen = new Position(48.019559, 8.921862);
+		
+		mongo.insert("simulations", new JsonObject().put("_id", "thesis").put("description", "small demo simulation with traffic incidents"), sim -> {
+			createSimulationData(iphofen, factoryStuttgart, "thesis", true, null);
+			createSimulationData(fischbach, factoryStuttgart, "thesis", true, null);
+			createSimulationData(fridingen, factoryStuttgart, "thesis", true, null);
 		});
-		
+	}
+	
+	private void createLargeDemoSimulation() {
 		JsonObject demoBig = new JsonObject().put("_id", "demoBig")
 				.put("description", "large demo simulation in endless mode without traffic incidents")
 				.put("endless", true);
@@ -145,6 +149,7 @@ public class BootstrapVerticle extends AbstractVerticle {
 					createSimulationData(start, dest, simId, false, f);
 					if(requestNo == cities.size()/2) {
 						f.setHandler(c -> {
+							LOGGER.info("STOPPING VERTX");
 							vertx.close();
 						});
 					}
@@ -183,7 +188,7 @@ public class BootstrapVerticle extends AbstractVerticle {
 						});
 						
 						if(createTrafficIncidents) {
-							List<JsonObject> incidents = incidentsOnRoute(route, 3);
+							List<JsonObject> incidents = incidentsOnRoute(route, 2);
 							for(JsonObject incident : incidents) {
 								incident.put("simulation", simId);
 								mongo.insert("traffic", incident, t -> {
@@ -193,11 +198,8 @@ public class BootstrapVerticle extends AbstractVerticle {
 						}
 					} else {
 						LOGGER.error("Route insertion failed: ", res.cause());
-						if(f != null) f.complete();
 					}
 				});
-			} else {
-				if(f != null) f.complete();
 			}
 		});
 	}
@@ -222,6 +224,8 @@ public class BootstrapVerticle extends AbstractVerticle {
 				
 				incident.put("start", startPos);
 				incident.put("end", endPos);
+				incident.put("active", true);
+				incident.put("reported", true);
 				incident.put("speed", 1.0);
 				incidents.add(incident);
 				

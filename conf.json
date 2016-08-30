@@ -2,16 +2,16 @@
 	"port": 8080,
 	"simulation": {
 		"osmFile": "osm/germany-latest.osm.pbf",
-		"msgInterval": 10,
+		"msgInterval": 15,
 		"receiverUrl": "http://localhost:9090/api/v1/fleet-telematics",
-		"postData": false,
-		"interval_ms": 4
+		"postData": true,
+		"interval_ms": 50
 	},
 	"mongodb": {
 		"db_name": "trucksimulation"
 	},
 	"amqp": {
-		"enabled": false,
+		"enabled": true,
 		"uri": "amqp://localhost"
 	}
 }

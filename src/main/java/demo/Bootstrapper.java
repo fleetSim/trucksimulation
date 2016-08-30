@@ -34,7 +34,7 @@ public class Bootstrapper {
 	}
 
 	private static void bootstrapCities(JsonObject conf) throws IOException, InterruptedException {
-		String cmd = String.format("mongoimport -d %s --collection cities --drop fixtures/DE/citiesde.json", conf.getJsonObject("mongodb").getString("db_name"));
+		String cmd = String.format("mongoimport -d %s --collection cities --drop fixtures/DE/citiesde.json", conf.getJsonObject("mongodb").getString("db_name", "trucksimulation"));
 		System.out.println("Running import command " + cmd);
 		Process c = Runtime.getRuntime().exec(cmd);
 		
@@ -43,6 +43,7 @@ public class Bootstrapper {
 		while ((line = reader.readLine())!= null) {
 			System.out.println(line);
 		}
+		c.waitFor();
 		if(c.exitValue() != 0) {
 			BufferedReader stderr = new BufferedReader(new InputStreamReader(c.getErrorStream()));
 			while ((line = stderr.readLine())!= null) {

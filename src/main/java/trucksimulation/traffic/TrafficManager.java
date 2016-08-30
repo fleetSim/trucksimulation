@@ -26,7 +26,7 @@ public class TrafficManager {
 			if(res.failed()) {
 				ctx.fail(res.cause());
 			} else {
-				JsonResponse.build(ctx).end(res.result().toString());
+				JsonResponse.build(ctx).putHeader("Connection", "close").end(res.result().toString());
 			}
 		});
 	}
