@@ -124,7 +124,7 @@ public class SimulationControllerVerticle extends AbstractVerticle {
 	 * Resolves reference to the truck's route and assigns route objects to the
 	 * truck.
 	 * 
-	 * @param simId
+	 * @param simulationId
 	 * @param truck
 	 */
 	private void assignRoute(String simulationId, Truck truck) {
@@ -176,8 +176,7 @@ public class SimulationControllerVerticle extends AbstractVerticle {
 		JsonObject endGeometry = new JsonObject().put("$geometry", traffic.getJsonObject("end"));
 		JsonObject intersectsStartAndEnd = new JsonObject().put("$geoIntersects", startGeometry).put("$geoIntersects",
 				endGeometry);
-		JsonObject query = new JsonObject().put("segments", intersectsStartAndEnd).put("simulation", simId);
-		return query;
+        return new JsonObject().put("segments", intersectsStartAndEnd).put("simulation", simId);
 	}
 
 	/**
@@ -192,7 +191,7 @@ public class SimulationControllerVerticle extends AbstractVerticle {
 
 	private boolean isSimulationRunning(String simulationId) {
 		Boolean isRunning = simulationStatus.get(simulationId);
-		return isRunning != null && isRunning.booleanValue() == true;
+		return isRunning != null && isRunning;
 	}
 
 }

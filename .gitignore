@@ -1,6 +1,8 @@
 *~
 .project
 .settings
+.idea
+trucksimulation.iml
 *.class
 */target
 server/file-uploads
